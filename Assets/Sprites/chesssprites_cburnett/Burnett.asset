@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ab0fcd7cf6044d3ad43de83a1407d45, type: 3}
+  m_Name: Burnett
+  m_EditorClassIdentifier: 
+  BlackKing: {fileID: 21300000, guid: 177f8f4ea31964e16b6bb2b80a3d8420, type: 3}
+  BlackQueen: {fileID: 21300000, guid: bc9f39bf78fd2434cba743fc94c4ee21, type: 3}
+  BlackRook: {fileID: 21300000, guid: ee9e467680ad44a35814404b47eaf74d, type: 3}
+  BlackBishop: {fileID: 21300000, guid: 3b1a53702ee404697aba6ca2ea32bcae, type: 3}
+  BlackKnight: {fileID: 21300000, guid: 59f30226a38e14e7bb15ae5e47a2d9f6, type: 3}
+  BlackPawn: {fileID: 21300000, guid: c8dda2d457dee43769bad54ad23cbdfa, type: 3}
+  WhiteKing: {fileID: 21300000, guid: 63cc5fd65b5c0499e82080a8c1596e7a, type: 3}
+  WhiteQueen: {fileID: 21300000, guid: 91b16e3fe9a474df4babcb01cc34803a, type: 3}
+  WhiteRook: {fileID: 21300000, guid: 5418a3a7c37f74bc09b436b205212304, type: 3}
+  WhiteBishop: {fileID: 21300000, guid: 4b5bdf16909534479b10b7bbe3d08637, type: 3}
+  WhiteKnight: {fileID: 21300000, guid: 1c94ced1749cf4bce916f9663d57908e, type: 3}
+  WhitePawn: {fileID: 21300000, guid: 2c1a76f1aa45f45f2bfd6fdee5486081, type: 3}
