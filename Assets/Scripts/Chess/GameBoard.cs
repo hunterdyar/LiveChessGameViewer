@@ -7,6 +7,9 @@ namespace Chess
     [System.Serializable]
     public class GameBoard
     {
+        public static Action OnNewGame;
+        public static Action OnGameOver;
+        public static Action<ChessPosition, ChessPosition> OnNewMove;
         public static Action<int,int,Piece?> OnSquareChanged;
         public string fen;
         public Piece?[,] CurrentBoard = new Piece?[8, 8];
@@ -17,8 +20,25 @@ namespace Chess
         private string enpassantTarget;
         private int halfmoveClock;
         public int moveNumber;
+
+        public void CreateNewGame(string fen)
+        {
+            Debug.Log("New Game");
+            OnNewGame?.Invoke();
+            SetFromFen(fen);
+        }
+
+        public void GameOver()
+        {
+            OnGameOver?.Invoke();
+        }
+        public void Move(Move move)
+        {
+            SetFromFen(move.FEN);
+            OnNewMove?.Invoke(move.MoveOldPosition, move.MoveNewPosition);
+        }
         
-        public void SetFromFen(string fen)
+        private void SetFromFen(string fen)
         {
             //clear list.
             this.fen = fen;
@@ -45,7 +65,7 @@ namespace Chess
        /// <summary>
        /// Compare any updates changed since last tick. We can get a bunch of network calls the same frame,
        /// that sort of thing. It's annoyingly common with buffers and hiccups. so more than one piece can be updated.
-       /// We don't know what the last move is just by looking at what changed, we use the reported data for that.
+       /// We don't know what the last move is just by looking at the last move changed, we use the reported data for that.
        /// </summary>
         public void UpdateTick()
         {

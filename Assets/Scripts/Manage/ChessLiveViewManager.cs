@@ -9,9 +9,7 @@ using UnityEngine.Networking;
 
 public class ChessLiveViewManager : MonoBehaviour
 {
-    private static char[] _files = new[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' }; 
     public static Action<GameState> OnGameStateChange;
-    public static Action<int,int,int,int> OnNewLastMove;
     public static Action<Info> OnNewGameInfo;
     public GameState State => _state;
     private GameState _state;
@@ -44,7 +42,7 @@ public class ChessLiveViewManager : MonoBehaviour
             if (newGame)
             {
                 //dispatch from main thread
-                Board.SetFromFen(CurrentInfo.fen);
+                Board.CreateNewGame(CurrentInfo.fen);
                 OnNewGameInfo?.Invoke(CurrentInfo);
                 newGame = false;
             }
@@ -52,8 +50,7 @@ public class ChessLiveViewManager : MonoBehaviour
             if (_pendingMoves.Count > 0)
             {
                 var m = _pendingMoves.Dequeue();
-                Board.SetFromFen(m.FEN);
-                UpdateLastMove(m.LastMove);
+                Board.Move(m);
             }
         }else if (State == GameState.SearchingForLiveGame)
         {
@@ -67,26 +64,6 @@ public class ChessLiveViewManager : MonoBehaviour
                 gameOverTimer = GameOverTime;
             }
         }
-    }
-
-    private void UpdateLastMove(string lm)
-    {
-        if (string.IsNullOrEmpty(lm))
-        {
-            return;
-        }
-        if (lm.Length != 4)
-        {
-            Debug.LogWarning($"Unknown last move {lm}");
-            return;
-        }
-        //1-8 int is the (row) rank
-        //a-h char is the (col) file
-        int ro = Array.IndexOf(_files,lm[0]);
-        int fo = int.Parse(lm[1].ToString())-1;
-        int rn = Array.IndexOf(_files,lm[2]);
-        int fn = int.Parse(lm[3].ToString())-1;
-        OnNewLastMove?.Invoke(ro, fo, rn, fn);
     }
 
     async void FindNewGame()
@@ -166,8 +143,5 @@ public class ChessLiveViewManager : MonoBehaviour
         }
     }
 
-    public static string XYToRankFile(int x, int y)
-    {
-        return $"{x+1}{_files[y]}";
-    }
+   
 }
