@@ -54,10 +54,10 @@ namespace Chess
 			}
 		}
 
-		public bool Equals()
-		{
-			return Rank == Rank && File == File;
-		}
+		// public bool Equals()
+		// {
+		// 	return Rank == Rank && File == File;
+		// }
 
 		public override string ToString()
 		{

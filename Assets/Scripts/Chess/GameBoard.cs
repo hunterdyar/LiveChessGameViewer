@@ -9,9 +9,8 @@ namespace Chess
     {
         public static Action OnNewGame;
         public static Action OnGameOver;
-        public static Action<ChessPosition, ChessPosition> OnNewMove;
-        public static Action<int,int,Piece?> OnSquareChanged;
-        public string fen;
+        public static Action<SquareData[], ChessPosition, ChessPosition> OnNewMove;
+        public static Action<PieceColor> OnCurrentColorChanged;
         public Piece?[,] CurrentBoard = new Piece?[8, 8];
         public Piece?[,] board = new Piece?[8,8];
         public readonly List<Piece> Pieces = new List<Piece>();
@@ -34,14 +33,13 @@ namespace Chess
         }
         public void Move(Move move)
         {
-            SetFromFen(move.FEN);
-            OnNewMove?.Invoke(move.MoveOldPosition, move.MoveNewPosition);
+            var changes = SetFromFen(move.FEN);
+            OnNewMove?.Invoke(changes, move.MoveOldPosition, move.MoveNewPosition);
         }
         
-        private void SetFromFen(string fen)
+        private SquareData[] SetFromFen(string fen)
         {
             //clear list.
-            this.fen = fen;
             string[] elements = fen.Split(' ');
             if (elements.Length != 6)
             {
@@ -53,7 +51,7 @@ namespace Chess
             enpassantTarget = elements[3];
             halfmoveClock = int.Parse(elements[4]);
             moveNumber = int.Parse(elements[5]);
-            UpdateTick();
+            return UpdateTick();
         }
 
         public void ResetView()
@@ -67,8 +65,9 @@ namespace Chess
        /// that sort of thing. It's annoyingly common with buffers and hiccups. so more than one piece can be updated.
        /// We don't know what the last move is just by looking at the last move changed, we use the reported data for that.
        /// </summary>
-        public void UpdateTick()
+        private SquareData[] UpdateTick()
         {
+            List<SquareData> changes = new List<SquareData>();
             for (int i = 0; i < 8; i++)
             {
                 for (int j = 0; j < 8; j++)
@@ -76,10 +75,11 @@ namespace Chess
                     if (!board[i, j].Equals(CurrentBoard[i, j]))
                     {
                         CurrentBoard[i, j] = board[i, j];
-                        OnSquareChanged?.Invoke(i, j, CurrentBoard[i, j]);
+                        changes.Add(new SquareData(i, j, CurrentBoard[i, j]));
                     }
                 }
             }
+            return changes.ToArray();
         }
         private void SetCasting(string e)
         {
