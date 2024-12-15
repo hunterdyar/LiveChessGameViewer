@@ -20,7 +20,7 @@ public class ChessLiveViewManager : MonoBehaviour
     public ChannelList _channelList;
     public Info CurrentInfo;
     public bool newGame = false;
-    private Queue<Move> _pendingMoves = new Queue<Move>();
+    private Queue<MoveData> _pendingMoves = new Queue<MoveData>();
     private float gameOverTimer  = 0.0f;
     public float GameOverTime = 5f;
     private void Awake()
@@ -138,7 +138,7 @@ public class ChessLiveViewManager : MonoBehaviour
         else
         {
             //this is a single move
-            Move m = new Move(update);
+            MoveData m = new MoveData(update);
             _pendingMoves.Enqueue(m);
         }
     }

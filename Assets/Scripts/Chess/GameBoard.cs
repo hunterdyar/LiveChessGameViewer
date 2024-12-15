@@ -7,10 +7,9 @@ namespace Chess
     [System.Serializable]
     public class GameBoard
     {
-        public static Action OnNewGame;
+        public static Action<GameBoard> OnNewGame;
         public static Action OnGameOver;
-        public static Action<ChessPosition, ChessPosition> OnNewMove;
-        public static Action<int,int,Piece?> OnSquareChanged;
+        public static Action<Move> OnNewMove;
         public string fen;
         public Piece?[,] CurrentBoard = new Piece?[8, 8];
         public Piece?[,] board = new Piece?[8,8];
@@ -24,23 +23,22 @@ namespace Chess
         public void CreateNewGame(string fen)
         {
             Debug.Log("New Game");
-            OnNewGame?.Invoke();
-            SetFromFen(fen);
+            SetFromFEN(fen);
+            OnNewGame?.Invoke(this);
         }
 
         public void GameOver()
         {
             OnGameOver?.Invoke();
         }
-        public void Move(Move move)
+        public void Move(MoveData moveData)
         {
-            SetFromFen(move.FEN);
-            OnNewMove?.Invoke(move.MoveOldPosition, move.MoveNewPosition);
+            var actualMove = MoveFromMoveData(moveData);
+            OnNewMove?.Invoke(actualMove);
         }
-        
-        private void SetFromFen(string fen)
+
+        private void SetFromFEN(string fen)
         {
-            //clear list.
             this.fen = fen;
             string[] elements = fen.Split(' ');
             if (elements.Length != 6)
@@ -53,7 +51,50 @@ namespace Chess
             enpassantTarget = elements[3];
             halfmoveClock = int.Parse(elements[4]);
             moveNumber = int.Parse(elements[5]);
-            UpdateTick();
+        }
+        private Move MoveFromMoveData(MoveData data)
+        {
+            //clear list.
+            SetFromFEN(data.FEN);
+
+            ChessPosition? captured = null;
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    if (!board[i, j].Equals(CurrentBoard[i, j]))
+                    {
+                        //moving to where a piece is?
+                        if (board[i, j] != null && CurrentBoard[i, j] != null)
+                        {
+                            //upgrading a pawn would be the samecolor
+                            if (board[i, j].Value.Color != CurrentBoard[i, j].Value.Color)
+                            {
+                                captured = new ChessPosition(i, j);
+                            }
+                            else
+                            {
+                                Debug.LogError($"Upgrade?");
+                            }
+                        }
+                        
+                        CurrentBoard[i, j] = board[i, j];
+                    }
+                }
+            }
+            
+            Move m = new Move()
+            {
+                Movement = new PieceMovement()
+                {
+                    Starting = data.MoveOldPosition,
+                    Destination = data.MoveNewPosition,
+                },
+                //todo: Castle Movement
+                Captured = captured,
+            };
+            return m;
+
         }
 
         public void ResetView()
@@ -62,25 +103,7 @@ namespace Chess
             //next tick this will invoke all the events?
         }
 
-       /// <summary>
-       /// Compare any updates changed since last tick. We can get a bunch of network calls the same frame,
-       /// that sort of thing. It's annoyingly common with buffers and hiccups. so more than one piece can be updated.
-       /// We don't know what the last move is just by looking at the last move changed, we use the reported data for that.
-       /// </summary>
-        public void UpdateTick()
-        {
-            for (int i = 0; i < 8; i++)
-            {
-                for (int j = 0; j < 8; j++)
-                {
-                    if (!board[i, j].Equals(CurrentBoard[i, j]))
-                    {
-                        CurrentBoard[i, j] = board[i, j];
-                        OnSquareChanged?.Invoke(i, j, CurrentBoard[i, j]);
-                    }
-                }
-            }
-        }
+     
         private void SetCasting(string e)
         {
             Casting = 0;

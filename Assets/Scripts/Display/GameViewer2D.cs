@@ -17,6 +17,8 @@ public class GameViewer2D : MonoBehaviour
 
     private ChessPosition? _lastMoveOld = null;
     private ChessPosition? _lastMoveNew = null;
+
+    private GameBoard _board;
     void Start()
     {
         InitBoard();
@@ -24,25 +26,41 @@ public class GameViewer2D : MonoBehaviour
 
     private void OnEnable()
     {
-        GameBoard.OnSquareChanged += OnSquareChanged;
         GameBoard.OnNewMove += OnNewMove;
         GameBoard.OnGameOver += ClearLastTint;
-        GameBoard.OnNewGame += ClearLastTint;
+        GameBoard.OnNewGame += NewGame;
     }
+
+    private void NewGame(GameBoard board)
+    {
+        _board = board;
+        ClearLastTint();
+        for (int r = 0; r < 8; r++)
+        {
+            for (int f = 0; f < 8; f++)
+            {
+                OnSquareChanged(r,f, board.CurrentBoard[r,f]);
+            }
+        }
+    }
+
     private void OnDisable()
     {
-        GameBoard.OnSquareChanged += OnSquareChanged;
         GameBoard.OnNewMove -= OnNewMove;
     }
 
-    private void OnNewMove(ChessPosition moveOld, ChessPosition moveNew)
+    private void OnNewMove(Move move)
     {
+        var moveOld = move.Movement.Starting;
+        var moveNew = move.Movement.Destination;
+
         ClearLastTint();
 
         _lastMoveOld = moveOld;
         SetColor(_tiles[moveOld.File, moveOld.Rank], moveOld.File, moveOld.Rank, tintAmount);
         _lastMoveNew = moveNew;
         SetColor(_tiles[moveNew.File, moveNew.Rank], moveNew.File, moveNew.Rank, tintAmount);
+        
     }
 
     private void OnSquareChanged(int r, int c, Piece? piece)

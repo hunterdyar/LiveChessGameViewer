@@ -62,7 +62,7 @@ namespace Chess
 		public override string ToString()
 		{
 			//0,0 = a1
-			return _files[File].ToString()+File;
+			return _files[File].ToString()+Rank;
 		}
 
 		public static string XYToRankFile(int x, int y)
