@@ -7,7 +7,6 @@ namespace Chess
     {
         public PieceColor Color;
         public PieceType Type;
-
         public bool Equals(Piece other)
         {
             return Color == other.Color && Type == other.Type;

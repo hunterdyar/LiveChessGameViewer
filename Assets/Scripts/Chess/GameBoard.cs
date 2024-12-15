@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Chess
 {
@@ -15,7 +16,7 @@ namespace Chess
         public Piece?[,] board = new Piece?[8,8];
         public readonly List<Piece> Pieces = new List<Piece>();
         public PieceColor CurrentColor;
-        public CastingAvailability Casting;
+        [FormerlySerializedAs("Casting")] public CastleingAvailability castleing;
         private string enpassantTarget;
         private int halfmoveClock;
         public int moveNumber;
@@ -83,7 +84,7 @@ namespace Chess
         }
         private void SetCasting(string e)
         {
-            Casting = 0;
+            castleing = 0;
             e = e.Trim();
             if (e == "-" || e == "")
             {
@@ -92,19 +93,19 @@ namespace Chess
 
             if (e.Contains('K'))
             {
-                Casting |= CastingAvailability.WhiteKingside;
+                castleing |= CastleingAvailability.WhiteKingside;
             }
             if (e.Contains('Q'))
             {
-                Casting |= CastingAvailability.WhiteQueenside;
+                castleing |= CastleingAvailability.WhiteQueenside;
             }
             if (e.Contains('k'))
             {
-                Casting |= CastingAvailability.BlackKingside;
+                castleing |= CastleingAvailability.BlackKingside;
             }
             if (e.Contains('q'))
             {
-                Casting |= CastingAvailability.BlackQueenside;
+                castleing |= CastleingAvailability.BlackQueenside;
             }
         }
 

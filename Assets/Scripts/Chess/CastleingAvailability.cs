@@ -3,7 +3,7 @@ using System;
 namespace Chess
 {
     [Flags]
-    public enum CastingAvailability
+    public enum CastleingAvailability
     {
         None = 0,
         WhiteKingside = 1,
