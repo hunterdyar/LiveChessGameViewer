@@ -1,8 +1,6 @@
 using Chess;
 using UnityEngine;
 
-namespace DefaultNamespace
-{
     [CreateAssetMenu(fileName = "Chess Sprite Set", menuName = "Chess/Sprite Set", order = 0)]
     public class ChessSpriteSet : ScriptableObject
     {
@@ -60,4 +58,3 @@ namespace DefaultNamespace
             return null;
         }
     }
-}

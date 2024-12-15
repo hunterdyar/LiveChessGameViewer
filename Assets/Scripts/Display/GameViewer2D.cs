@@ -1,6 +1,7 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Chess;
-using DefaultNamespace;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -19,6 +20,9 @@ public class GameViewer2D : MonoBehaviour
     private ChessPosition? _lastMoveNew = null;
 
     private GameBoard _board;
+    
+    private readonly Queue<(SquareData[],PieceAnimation)> _pieceAnimationQueue = new Queue<(SquareData[],PieceAnimation)>();
+    private PieceAnimation _currentAnimation;
     void Start()
     {
         InitBoard();
@@ -51,27 +55,76 @@ public class GameViewer2D : MonoBehaviour
 
     private void OnNewMove(Move move)
     {
-        var moveOld = move.Movement.Starting;
-        var moveNew = move.Movement.Destination;
+        //Create Animation
+        var sprite = _pieces[moveNew.File, moveNew.Rank];
+        var startPos = _tiles[moveOld.File, moveOld.Rank].transform.position;
+        var endPos = sprite.transform.position;
 
-        ClearLastTint();
+        var anim = new PieceAnimation(sprite, startPos, endPos);
 
-        _lastMoveOld = moveOld;
-        SetColor(_tiles[moveOld.File, moveOld.Rank], moveOld.File, moveOld.Rank, tintAmount);
-        _lastMoveNew = moveNew;
-        SetColor(_tiles[moveNew.File, moveNew.Rank], moveNew.File, moveNew.Rank, tintAmount);
-        
+        //Set Tint
+        anim.OnStart += () =>
+        {
+            //reset the tint
+            ClearLastTint();
+            _lastMoveOld = moveOld;
+            SetColor(_tiles[moveOld.File, moveOld.Rank], moveOld.File, moveOld.Rank, tintAmount);
+            _lastMoveNew = moveNew;
+            SetColor(_tiles[moveNew.File, moveNew.Rank], moveNew.File, moveNew.Rank, tintAmount);
+        };
+        //finish tint
+        anim.OnEnd += ClearLastTint;
+
+        //run the animation! Eventually! 
+        _pieceAnimationQueue.Enqueue((changes,anim));
     }
 
-    private void OnSquareChanged(int r, int c, Piece? piece)
+    private void SetSquareByData(SquareData data)
     {
         Sprite sprite = null;
-        if (piece.HasValue)
+        if (data.Piece.HasValue)
         {
-            sprite = chessSpriteSet.GetSprite(piece.Value);
+            sprite = chessSpriteSet.GetSprite(data.Piece.Value);
         }
 
-        _pieces[c,r].sprite = sprite;
+        _pieces[data.Rank,data.File].sprite = sprite;
+    }
+
+    private void Update()
+    {
+        TickCurrentAnimation();
+        if (_currentAnimation == null)
+        {
+            if (_pieceAnimationQueue.Count > 0)
+            {
+                
+                var (sq,anim) = _pieceAnimationQueue.Dequeue();
+                _currentAnimation = anim;
+                
+                //reset to instantly snap to the starting board state.
+                foreach (var change in sq)
+                {
+                    SetSquareByData(change);
+                }
+                //Unset and animate back to norm.
+                _currentAnimation.Init();
+                TickCurrentAnimation(); 
+                Debug.Log("Start Next Animation");
+            }
+        }
+    }
+
+    private void TickCurrentAnimation()
+    {
+        if (_currentAnimation != null)
+        {
+            _currentAnimation.Tick(Time.deltaTime);
+            if (_currentAnimation.IsComplete)
+            {
+                _currentAnimation = null;
+            }
+        }
+
     }
 
     private void ClearLastTint()
