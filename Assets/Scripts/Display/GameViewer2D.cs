@@ -21,7 +21,7 @@ public class GameViewer2D : MonoBehaviour
 
     private GameBoard _board;
     
-    private readonly Queue<(SquareData[],PieceAnimation)> _pieceAnimationQueue = new Queue<(SquareData[],PieceAnimation)>();
+    private readonly Queue<PieceAnimation> _animationQueue = new Queue<PieceAnimation>();
     private PieceAnimation _currentAnimation;
     void Start()
     {
@@ -43,7 +43,7 @@ public class GameViewer2D : MonoBehaviour
         {
             for (int f = 0; f < 8; f++)
             {
-                OnSquareChanged(r,f, board.CurrentBoard[r,f]);
+                InstantSetPieceOnSquare(r,f, board.CurrentBoard[r,f]);
             }
         }
     }
@@ -55,6 +55,9 @@ public class GameViewer2D : MonoBehaviour
 
     private void OnNewMove(Move move)
     {
+        var moveOld = move.Movement.Starting;
+        var moveNew = move.Movement.Destination;
+        
         //Create Animation
         var sprite = _pieces[moveNew.File, moveNew.Rank];
         var startPos = _tiles[moveOld.File, moveOld.Rank].transform.position;
@@ -76,18 +79,18 @@ public class GameViewer2D : MonoBehaviour
         anim.OnEnd += ClearLastTint;
 
         //run the animation! Eventually! 
-        _pieceAnimationQueue.Enqueue((changes,anim));
+        _animationQueue.Enqueue(anim);
     }
 
-    private void SetSquareByData(SquareData data)
+    private void InstantSetPieceOnSquare(int i, int j, Piece? piece)
     {
         Sprite sprite = null;
-        if (data.Piece.HasValue)
+        if (piece.HasValue)
         {
-            sprite = chessSpriteSet.GetSprite(data.Piece.Value);
+            sprite = chessSpriteSet.GetSprite(piece.Value);
         }
 
-        _pieces[data.Rank,data.File].sprite = sprite;
+        _pieces[i,j].sprite = sprite;
     }
 
     private void Update()
@@ -95,17 +98,12 @@ public class GameViewer2D : MonoBehaviour
         TickCurrentAnimation();
         if (_currentAnimation == null)
         {
-            if (_pieceAnimationQueue.Count > 0)
+            if (_animationQueue.Count > 0)
             {
                 
-                var (sq,anim) = _pieceAnimationQueue.Dequeue();
+                var anim = _animationQueue.Dequeue();
                 _currentAnimation = anim;
                 
-                //reset to instantly snap to the starting board state.
-                foreach (var change in sq)
-                {
-                    SetSquareByData(change);
-                }
                 //Unset and animate back to norm.
                 _currentAnimation.Init();
                 TickCurrentAnimation(); 
@@ -113,7 +111,6 @@ public class GameViewer2D : MonoBehaviour
             }
         }
     }
-
     private void TickCurrentAnimation()
     {
         if (_currentAnimation != null)

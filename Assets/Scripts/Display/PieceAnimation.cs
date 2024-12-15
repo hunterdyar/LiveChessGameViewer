@@ -30,6 +30,7 @@ public class PieceAnimation
 			_endPoints = new Vector3[] { endPos };
 			pieceCount = 1;
 		}
+		
 		//animationCurve
 		
 		public void Init()

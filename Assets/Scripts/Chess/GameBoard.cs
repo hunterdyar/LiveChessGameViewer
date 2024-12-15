@@ -23,7 +23,7 @@ namespace Chess
         public void CreateNewGame(string fen)
         {
             Debug.Log("New Game");
-            SetFromFEN(fen);
+            SetFromFEN(fen,true);
             OnNewGame?.Invoke(this);
         }
 
@@ -37,7 +37,7 @@ namespace Chess
             OnNewMove?.Invoke(actualMove);
         }
 
-        private void SetFromFEN(string fen)
+        private void SetFromFEN(string fen, bool hardSetCurrentBoard = false)
         {
             this.fen = fen;
             string[] elements = fen.Split(' ');
@@ -45,12 +45,24 @@ namespace Chess
             {
                 Debug.LogError($"Fen {fen} is invalid");
             }
-            SetPieces(elements[0]);
+            SetPieces(elements[0]);//this sets Board.
             SetColor(elements[1]);
             SetCasting(elements[2]);
             enpassantTarget = elements[3];
             halfmoveClock = int.Parse(elements[4]);
             moveNumber = int.Parse(elements[5]);
+
+            if (hardSetCurrentBoard)
+            {
+                //todo: array.Copy
+                for (int i = 0; i < 8; i++)
+                {
+                    for (int j = 0; j < 8; j++)
+                    {
+                        CurrentBoard[i, j] = board[i,j];
+                    }
+                }
+            }
         }
         private Move MoveFromMoveData(MoveData data)
         {
@@ -74,7 +86,7 @@ namespace Chess
                             }
                             else
                             {
-                                Debug.LogError($"Upgrade?");
+                                Debug.LogError($"Upgrade? Castle? Or its a new game and this is reset code... {data.LastMove}");
                             }
                         }
                         
