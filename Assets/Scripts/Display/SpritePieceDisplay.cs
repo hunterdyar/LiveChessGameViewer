@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace DefaultNamespace
 {
-	public class InstantSnapSpritePiece : MonoBehaviour, IRealPieceSubscriber
+	public class SpritePieceDisplay : MonoBehaviour, IRealPieceSubscriber
 	{
 		private SpriteRenderer _renderer;
 		private GameViewer2D _viewer;
@@ -14,7 +14,7 @@ namespace DefaultNamespace
 			rp.Subscribe(this);
 			
 			//set self to initial rp position. Just using these functions because there is no animation.
-			Move(rp.CurrentPosition);
+			transform.position = _viewer.GetWorldPosition(rp.CurrentPosition);
 			Promotion(rp.Piece);
 			
 		}
@@ -30,7 +30,9 @@ namespace DefaultNamespace
 
 		public void Move(ChessPosition newPosition)
 		{
-			transform.position = _viewer.GetWorldPosition(newPosition);
+			var newPos = _viewer.GetWorldPosition(newPosition);
+			var p = new PieceAnimation(transform, transform.position, newPos);
+			_viewer.StartAnimation(p);
 		}
 
 		public void Promotion(Piece newPiece)

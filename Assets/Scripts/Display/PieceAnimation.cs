@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class PieceAnimation
 {
-//todo: Initializers with Castling, Captures.
-		
 		private int pieceCount;
 
 		public Action OnStart;
@@ -18,19 +16,21 @@ public class PieceAnimation
 		private Coroutine _routine;
 		// private bool _animating => _t is < 1 and > 0;
 		private float _t;
-		private float _duration = 0.75f;
+		private float _duration = 0.15f;
 
 		public bool IsComplete => _isComplete;
 		private bool _isComplete;
 
-		public PieceAnimation(SpriteRenderer sprite, Vector3 startPos, Vector3 endPos)
+		public PieceAnimation(Transform transform, Vector3 startPos, Vector3 endPos)
 		{
-			_elements = new[] { sprite.transform };
+			_elements = new[] { transform };
 			_startPoints = new Vector3[] { startPos };
 			_endPoints = new Vector3[] { endPos };
 			pieceCount = 1;
 		}
-		//animationCurve
+		//todo: These are now individual tweens. No longer makes sense to use arrays.
+		//Probably should replace the whole thing with my tweening library
+	
 		
 		public void Init()
 		{

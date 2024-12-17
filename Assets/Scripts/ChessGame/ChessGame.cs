@@ -9,8 +9,14 @@ namespace Chess
 	public class ChessGame
 	{
 		public static Action<RealPiece> OnNewRealPiece;
-		public static Action<ChessMove> OnMoveStart;
-		//board tint.
+		/// <summary>
+		/// Called before RealPieces get updated (and their Move calls).
+		/// </summary>
+		public static Action OnMoveStart;
+		/// <summary>
+		/// Called after RealPieces get updated.
+		/// </summary>
+		public static Action<ChessMove> OnMove;
 		//Black PlayerInfo
 		//White PlayerInfo
 
@@ -111,9 +117,10 @@ namespace Chess
 						_halfMoveCountWithThisMoveNumber = 0;
 					}
 
+					OnMoveStart?.Invoke();
 					move.Calculate(_boardState);
 					SetStateToMove(move);
-					OnMoveStart?.Invoke(move);
+					OnMove?.Invoke(move);
 					
 					//then we ... animate....?
 				}

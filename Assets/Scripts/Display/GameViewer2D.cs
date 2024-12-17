@@ -17,13 +17,12 @@ public class GameViewer2D : MonoBehaviour
     private SpriteRenderer[,] _tiles;
     private SpriteRenderer[,] _tints;
     public ChessSpriteSet chessSpriteSet;
-    [FormerlySerializedAs("_piecePrefab")] public InstantSnapSpritePiece piecePrefab;
+    [FormerlySerializedAs("_piecePrefab")] public SpritePieceDisplay piecePrefab;
     
     private ChessPosition? _lastMoveOld = null;
     private ChessPosition? _lastMoveNew = null;
     
-    private readonly Queue<(SquareData[],PieceAnimation)> _pieceAnimationQueue = new Queue<(SquareData[],PieceAnimation)>();
-    private PieceAnimation _currentAnimation;
+    private readonly List<PieceAnimation> _currentAnimations = new List<PieceAnimation>();
     void Start()
     {
         InitBoard();
@@ -32,15 +31,43 @@ public class GameViewer2D : MonoBehaviour
     private void OnEnable()
     {
        ChessGame.OnNewRealPiece += OnNewRealPiece;
-       ChessGame.OnMoveStart += OnMove;
+       ChessGame.OnMoveStart += OnMoveStart;
+       ChessGame.OnMove += OnMove;
     }
     
     private void OnDisable()
     {
         ChessGame.OnNewRealPiece -= OnNewRealPiece;
-        ChessGame.OnMoveStart -= OnMove;
+        ChessGame.OnMoveStart -= OnMoveStart;
+        ChessGame.OnMove -= OnMove;
     }
 
+    public void StartAnimation(PieceAnimation animation)
+    {
+        _currentAnimations.Add(animation);
+        animation.Init();
+    }
+
+    private void Update()
+    {
+        foreach (var anim in _currentAnimations)
+        {
+            if(!anim.IsComplete){
+                anim.Tick(Time.deltaTime);
+            }
+        }
+    }
+
+    private void OnMoveStart()
+    {
+        //Snap current animation to the end. Wait they only just got registered.
+        for (int i = 0; i < _currentAnimations.Count; i++)
+        {
+            _currentAnimations[i].Complete();
+        }
+
+        _currentAnimations.Clear();
+    }
     private void OnMove(ChessMove cmove)
     {
         ClearLastTint();
@@ -49,24 +76,13 @@ public class GameViewer2D : MonoBehaviour
             _tints[move.oldPos.Rank, move.oldPos.File].enabled = true;
             _tints[move.newPos.Rank, move.newPos.File].enabled = true;
         }
+
     }
     
     private void OnNewRealPiece(RealPiece rp)
     {
         var go = Instantiate(piecePrefab,transform);
         go.Init(rp,this);
-    }
-
-    private void TickCurrentAnimation()
-    {
-        if (_currentAnimation != null)
-        {
-            _currentAnimation.Tick(Time.deltaTime);
-            if (_currentAnimation.IsComplete)
-            {
-                _currentAnimation = null;
-            }
-        }
     }
 
     private void ClearLastTint()
