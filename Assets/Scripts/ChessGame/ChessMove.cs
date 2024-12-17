@@ -32,7 +32,7 @@ namespace Chess
 		private List<(ChessPosition, Piece)> _upgrades = new List<(ChessPosition,Piece)>();
 		
 		private string givenMove;
-		public ChessMove(Move move)
+		public ChessMove(MoveData move)
 		{
 			givenMove = move.LastMove;
 			var fen = move.FEN;

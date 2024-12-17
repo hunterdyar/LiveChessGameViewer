@@ -77,7 +77,7 @@ namespace Chess
 			_capturedPieces.Clear();
 		}
 
-		public void NextMove(Move move)
+		public void NextMove(MoveData move)
 		{
 			var m = new ChessMove(move);
 			_moves.Enqueue(m);
