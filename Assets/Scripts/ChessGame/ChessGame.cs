@@ -110,7 +110,10 @@ namespace Chess
 					}else if (move.MoveNumber - _boardStateMoveNumber != 1)
 					{
 						//Reinit???
-						Debug.LogError("Did not receive moves in proper sequential order.");
+						Debug.LogError($"Did not receive moves in proper sequential order. Did {_boardStateMoveNumber}, got {move.MoveNumber}. Halfcount is {_halfMoveCountWithThisMoveNumber}");
+						//todo: call error condition back to manager
+						return;
+						
 					}
 					else
 					{
