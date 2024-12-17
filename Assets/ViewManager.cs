@@ -1,18 +1,33 @@
+using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class ViewManager : MonoBehaviour
 {
     public string displayScene;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+
+    private string currentExtraScene;
+    
+    IEnumerator Start()
     {
-        SceneManager.LoadScene(displayScene, LoadSceneMode.Additive);
+        currentExtraScene = displayScene;
+        
+        var load = SceneManager.LoadSceneAsync(displayScene, LoadSceneMode.Additive);
+        
+        while (!load.isDone)
+        {
+            //update progress bar
+            var progress = load.progress;
+            yield return null;
+        }
+        
+        //done
+        SceneManager.MoveGameObjectToScene();
     }
 
-    // Update is called once per frame
-    void Update()
+    public void SwitchView()
     {
-        
+        SceneManager.UnloadScene(currentExtraScene);
     }
 }
