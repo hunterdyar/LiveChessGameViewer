@@ -166,10 +166,9 @@ MonoBehaviour:
   squareSprite: {fileID: 7482667652216324306, guid: f089db20c42a14f68a95105db01e6097, type: 3}
   brightTile: {r: 0.9176471, g: 0.91372555, b: 0.8235295, a: 1}
   darkTile: {r: 0.29411766, g: 0.45098042, b: 0.6, a: 1}
-  tintColor: {r: 1, g: 0.7160444, b: 0, a: 1}
-  tintAmount: 0.81
+  tintColor: {r: 1, g: 0.7160444, b: 0, a: 0.6509804}
   chessSpriteSet: {fileID: 11400000, guid: e319e4471d3a94e2a8b7db8668e8c07b, type: 2}
-  _piecePrefab: {fileID: 6841643573353636470, guid: 4642539448f41434c9bbd15e2a522c17, type: 3}
+  piecePrefab: {fileID: 6841643573353636470, guid: 4642539448f41434c9bbd15e2a522c17, type: 3}
 --- !u!1 &763204986
 GameObject:
   m_ObjectHideFlags: 0

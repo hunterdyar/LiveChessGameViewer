@@ -85,7 +85,7 @@ namespace Chess
 
 		public void Tick()
 		{
-			//if animating...
+			//if animating... block ehre.
 			//static int for anim count?
 			if (_moves.Count > 0)
 			{
@@ -130,6 +130,11 @@ namespace Chess
 		//Responsible for the _boardState, which we use to calculate move diffs; and for RealPieces, which are what actually matter externally to here.
 		private void SetStateToMove(ChessMove move)
 		{
+			if (_realPieces.Count == 0)
+			{
+				//this happenes when this is called on like, the exact game end?
+				return;
+			}
 			_boardStateMoveNumber = move.MoveNumber;
 			foreach (var c in move.Upgrades)
 			{
@@ -184,6 +189,15 @@ namespace Chess
 				_boardState[m.newPos.Rank, m.newPos.File] = _boardState[m.oldPos.Rank, m.oldPos.File];
 				_boardState[m.oldPos.Rank, m.oldPos.File] = null;
 			}
+		}
+
+		public bool DoneDisplaying()
+		{
+			if (_moves.Count > 0)
+			{
+				return false;
+			}
+			return true;
 		}
 	}
 }

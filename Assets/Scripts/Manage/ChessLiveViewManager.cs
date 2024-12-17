@@ -23,7 +23,7 @@ public class ChessLiveViewManager : MonoBehaviour
     public bool newGame = false;
     private Queue<MoveData> _pendingMoves = new Queue<MoveData>();
     private float gameOverTimer  = 0.0f;
-    public float GameOverTime = 5f;
+    public float GameOverTime = 2.5f;
 
     private float errorRetryCountdown = 3f;
     //refactor
@@ -36,7 +36,8 @@ public class ChessLiveViewManager : MonoBehaviour
     }
 
     void Start()
-    { 
+    {
+        GameSetings.LoadSetings();
         FindNewGame();
     }
 
@@ -79,6 +80,10 @@ public class ChessLiveViewManager : MonoBehaviour
             FindNewGame();
         }else if (State == GameState.GameComplete)
         {
+            if (!_game.DoneDisplaying())
+            {
+                return;
+            }
             gameOverTimer -= Time.deltaTime;
             if (gameOverTimer <= 0.0f)
             {

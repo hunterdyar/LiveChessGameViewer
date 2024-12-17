@@ -208,14 +208,38 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7876ff3668b24e5f8a1e9427b90597ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Board:
-    fen: 
-    CurrentColor: 0
-    Casting: 0
-    moveNumber: 0
   defaultGameType: bullet
   _channelList:
     channels: []
+  CurrentInfo:
+    variant:
+      key: 
+      name: 
+    speed: 
+    perf: 
+    rated: 0
+    fen: 
+    turns: 0
+    source: 
+    status:
+      id: 0
+      name: 
+    winner: 
+    player: 
+    lastMove: 
+    players:
+      white:
+        user:
+          name: 
+          id: 
+        rating: 0
+      black:
+        user:
+          name: 
+          id: 
+        rating: 0
+  newGame: 0
+  GameOverTime: 2.5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -20,7 +20,6 @@ public class PieceAnimation
 		private Coroutine _routine;
 		// private bool _animating => _t is < 1 and > 0;
 		private float _t;
-		private float _duration = 0.15f;
 
 		public bool IsComplete => _isComplete;
 		private bool _isComplete;
@@ -74,7 +73,7 @@ public class PieceAnimation
 		}
 		public void Tick(float delta)
 		{
-			_t += delta / _duration;
+			_t += delta / GameSetings.AnimationMovementDuration;
 			if (_t < 1)
 			{
 				for (var i = 0; i < pieceCount; i++)

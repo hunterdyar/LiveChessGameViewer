@@ -13,14 +13,10 @@ public class GameViewer2D : MonoBehaviour
     [FormerlySerializedAs("brightTint")] public Color brightTile;
     [FormerlySerializedAs("darkTint")] public Color darkTile;
     [FormerlySerializedAs("TintColor")] public Color tintColor;
-    public float tintAmount;
     private SpriteRenderer[,] _tiles;
     private SpriteRenderer[,] _tints;
     public ChessSpriteSet chessSpriteSet;
     [FormerlySerializedAs("_piecePrefab")] public SpritePieceDisplay piecePrefab;
-    
-    private ChessPosition? _lastMoveOld = null;
-    private ChessPosition? _lastMoveNew = null;
 
     public readonly PieceAnimation CurrentAnimation = new PieceAnimation();
     void Start()
@@ -60,11 +56,15 @@ public class GameViewer2D : MonoBehaviour
         ClearLastTint();
         foreach (var move in cmove.Moves)
         {
-            _tints[move.oldPos.Rank, move.oldPos.File].enabled = true;
-            _tints[move.newPos.Rank, move.newPos.File].enabled = true;
+            _tints[move.oldPos.File, move.oldPos.Rank].enabled = true;
+            _tints[move.newPos.File, move.newPos.Rank].enabled = true;
         }
         
         CurrentAnimation.Start();
+        if (!GameSetings.Animate)
+        {
+            CurrentAnimation.Complete();
+        }
     }
     
     private void OnNewRealPiece(RealPiece rp)
@@ -145,6 +145,6 @@ public class GameViewer2D : MonoBehaviour
 
     public Vector3 GetWorldPosition(ChessPosition position)
     {
-        return new Vector3(position.Rank, position.File, 0);
+        return new Vector3(position.File, position.Rank, 0);
     }
 }
