@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 namespace Chess
@@ -165,9 +166,25 @@ namespace Chess
 		        }
 		        else
 		        {
-			        throw new NotImplementedException("This isn't a valid move!");
+			        var pawnFrom = _changes.Where(x => x.Change == SquareChange.Removed && x.OldPiece.HasValue && x.OldPiece.Value.Type == PieceType.Pawn);
+			        var upgradeAdd = _changes.Where(x => x.Change == SquareChange.Added && x.Piece.HasValue);//and rank is 0 or 7
+
+			        if (pawnFrom.Count() == 1 && upgradeAdd.Count() == 1)
+			        {
+				       var pawnChange = pawnFrom.First();
+				       var upgrade = upgradeAdd.First();
+				        if (pawnChange.OldPiece.Value.Type == upgrade.Piece.Value.Type)
+				        {
+					        _moves.Add((pawnChange.Position, upgrade.Position));
+					        _upgrades.Add((upgrade.Position, upgrade.Piece.Value));
+				        }
+				        else
+				        {
+					        throw new NotImplementedException("This isn't a valid move!");
+				        }
+				        
+			        }
 		        }
-		        
 	        }
 
 	        if (_changes.Count == 3)

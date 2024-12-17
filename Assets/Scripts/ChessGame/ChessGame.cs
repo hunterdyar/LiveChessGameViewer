@@ -136,13 +136,7 @@ namespace Chess
 				return;
 			}
 			_boardStateMoveNumber = move.MoveNumber;
-			foreach (var c in move.Upgrades)
-			{
-				_boardState[c.Pos.Rank, c.Pos.File] = c.Piece;
-				//
-				var upgraded = _realPieces[c.Pos];
-				upgraded.Promotion(c.Piece);
-			}
+			
 
 			foreach (var c in move.Captures)
 			{
@@ -188,6 +182,14 @@ namespace Chess
 				//
 				_boardState[m.newPos.Rank, m.newPos.File] = _boardState[m.oldPos.Rank, m.oldPos.File];
 				_boardState[m.oldPos.Rank, m.oldPos.File] = null;
+			}
+
+			foreach (var c in move.Upgrades)
+			{
+				_boardState[c.Pos.Rank, c.Pos.File] = c.Piece;
+				//
+				var upgraded = _realPieces[c.Pos];
+				upgraded.Promotion(c.Piece);
 			}
 		}
 
