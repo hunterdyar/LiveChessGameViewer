@@ -25,7 +25,7 @@ namespace Chess
 		public List<(ChessPosition oldPos, ChessPosition newPos)> Moves => _moves;
 		private List<(ChessPosition oldPos, ChessPosition newPos)> _moves = new List<(ChessPosition, ChessPosition)>();
 		//list of captures
-		public List<ChessPosition> Captures = new List<ChessPosition>(); 
+		public List<ChessPosition> Captures => _captures;
 		private List<ChessPosition> _captures = new List<ChessPosition>();
 
 		public List<(ChessPosition Pos, Piece Piece)> Upgrades => _upgrades;
@@ -122,11 +122,11 @@ namespace Chess
 		        }
 	        }
 
-	        if (_changes.GroupBy(x => x.Position).Max(x => x.Count()) > 1)
+	        var groups = _changes.GroupBy(x => x.Position);
+	        if (groups.Max(x => x.Count()) > 1)
 	        {
 		        throw new Exception("Invalid change set. multiple changes to same square. literally how?");
 	        }
-	        Debug.Log($"Changes Count {_changes.Count}");
 	        //now we know everything that changed. Let's figure out what happened!
 	        if (_changes.Count == 0)
 	        {
@@ -136,11 +136,17 @@ namespace Chess
 
 	        if (_changes.Count == 2)
 	        {
+		        if (_changes[0].Position == _changes[1].Position)
+		        {
+			        throw new Exception("why didn't the groupby catch this?");
+		        }
 		        //one might be a capture.
 		        if (_changes[0].Change == SquareChange.Captured)
 		        {
 			        _captures.Add(_changes[0].Position);
-		        }else if (_changes[1].Change == SquareChange.Captured)
+		        }
+		        
+		        if (_changes[1].Change == SquareChange.Captured)
 		        {
 			        _captures.Add(_changes[1].Position);
 		        }
@@ -219,6 +225,7 @@ namespace Chess
 	        if (_changes.Count > 4)
 	        {
 		       // throw new Exception("wtf");
+		       Debug.LogWarning("why so many changes");
 	        }
 	        //todo: Validate our string against the move's string. (givenMove)
         }

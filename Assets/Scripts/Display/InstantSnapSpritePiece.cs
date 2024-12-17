@@ -6,7 +6,18 @@ namespace DefaultNamespace
 	public class InstantSnapSpritePiece : MonoBehaviour, IRealPieceSubscriber
 	{
 		private SpriteRenderer _renderer;
-		public GameViewer2D Viewer;
+		private GameViewer2D _viewer;
+
+		public void Init(RealPiece rp, GameViewer2D viewer)
+		{
+			_viewer = viewer;
+			rp.Subscribe(this);
+			
+			//set self to initial rp position. Just using these functions because there is no animation.
+			Move(rp.CurrentPosition);
+			Promotion(rp.Piece);
+			
+		}
 		private void Awake()
 		{
 			_renderer = GetComponent<SpriteRenderer>();
@@ -19,12 +30,12 @@ namespace DefaultNamespace
 
 		public void Move(ChessPosition newPosition)
 		{
-			transform.position = Viewer.GetWorldPosition(newPosition);
+			transform.position = _viewer.GetWorldPosition(newPosition);
 		}
 
 		public void Promotion(Piece newPiece)
 		{
-			_renderer.sprite = Viewer.chessSpriteSet.GetSprite(newPiece);
+			_renderer.sprite = _viewer.chessSpriteSet.GetSprite(newPiece);
 		}
 
 		public void Destroy()

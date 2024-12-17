@@ -70,7 +70,6 @@ public class ChessLiveViewManager : MonoBehaviour
             if (_pendingMoves.Count > 0)
             {
                 var m = _pendingMoves.Dequeue();
-                Debug.Log(m.FEN);
                 Board.Move(m);
                 _game.NextMove(m);
             }

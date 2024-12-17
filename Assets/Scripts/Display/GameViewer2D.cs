@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Chess;
+using DefaultNamespace;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -15,7 +16,8 @@ public class GameViewer2D : MonoBehaviour
     private SpriteRenderer[,] _tiles;
     private SpriteRenderer[,] _pieces;
     public ChessSpriteSet chessSpriteSet;
-
+    public InstantSnapSpritePiece _piecePrefab;
+    
     private ChessPosition? _lastMoveOld = null;
     private ChessPosition? _lastMoveNew = null;
     
@@ -28,73 +30,17 @@ public class GameViewer2D : MonoBehaviour
 
     private void OnEnable()
     {
-        GameBoard.OnNewMove += OnNewMove;
-        GameBoard.OnGameOver += ClearLastTint;
-        GameBoard.OnNewGame += ClearLastTint;
-    }
+       ChessGame.OnNewRealPiece += OnNewRealPiece;
+    } 
     private void OnDisable()
     {
-        GameBoard.OnNewMove -= OnNewMove;
+        ChessGame.OnNewRealPiece -= OnNewRealPiece;
     }
 
-    private void OnNewMove(SquareData[] changes, ChessPosition moveOld, ChessPosition moveNew)
+    private void OnNewRealPiece(RealPiece rp)
     {
-        //Create Animation
-        var sprite = _pieces[moveNew.File, moveNew.Rank];
-        var startPos = _tiles[moveOld.File, moveOld.Rank].transform.position;
-        var endPos = sprite.transform.position;
-
-        var anim = new PieceAnimation(sprite, startPos, endPos);
-
-        //Set Tint
-        anim.OnStart += () =>
-        {
-            //reset the tint
-            ClearLastTint();
-            _lastMoveOld = moveOld;
-            SetColor(_tiles[moveOld.File, moveOld.Rank], moveOld.File, moveOld.Rank, tintAmount);
-            _lastMoveNew = moveNew;
-            SetColor(_tiles[moveNew.File, moveNew.Rank], moveNew.File, moveNew.Rank, tintAmount);
-        };
-        //finish tint
-        anim.OnEnd += ClearLastTint;
-
-        //run the animation! Eventually! 
-        _pieceAnimationQueue.Enqueue((changes,anim));
-    }
-
-    private void SetSquareByData(SquareData data)
-    {
-        Sprite sprite = null;
-        if (data.Piece.HasValue)
-        {
-            sprite = chessSpriteSet.GetSprite(data.Piece.Value);
-        }
-
-        _pieces[data.Rank,data.File].sprite = sprite;
-    }
-
-    private void Update()
-    {
-        TickCurrentAnimation();
-        if (_currentAnimation == null)
-        {
-            if (_pieceAnimationQueue.Count > 0)
-            {
-                
-                var (sq,anim) = _pieceAnimationQueue.Dequeue();
-                _currentAnimation = anim;
-                
-                //reset to instantly snap to the starting board state.
-                foreach (var change in sq)
-                {
-                    SetSquareByData(change);
-                }
-                //Unset and animate back to norm.
-                _currentAnimation.Init();
-                TickCurrentAnimation(); 
-            }
-        }
+        var go = Instantiate(_piecePrefab,transform);
+        go.Init(rp,this);
     }
 
     private void TickCurrentAnimation()
@@ -183,7 +129,6 @@ public class GameViewer2D : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
-        
     }
 
     public Vector3 GetWorldPosition(ChessPosition position)

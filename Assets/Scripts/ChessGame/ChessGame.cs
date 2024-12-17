@@ -9,7 +9,6 @@ namespace Chess
 	public class ChessGame
 	{
 		public static Action<RealPiece> OnNewRealPiece;
-		
 		//board tint.
 		//Black PlayerInfo
 		//White PlayerInfo
@@ -155,7 +154,7 @@ namespace Chess
 				{
 					if (_realPieces.TryGetValue(pos, out var rp))
 					{
-						Debug.LogWarning("Move but haven't updated to catpure yet!");
+						Debug.LogWarning($"Move but haven't updated to catpure yet! CaptureCount: {move.Captures.Count}");
 						rp.Capture();
 						_realPieces.Remove(pos);
 					}
