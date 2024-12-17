@@ -7,7 +7,6 @@ namespace Chess
     {
         public PieceColor Color;
         public PieceType Type;
-
         public bool Equals(Piece other)
         {
             return Color == other.Color && Type == other.Type;
@@ -62,6 +61,12 @@ namespace Chess
                     break;
             }
         }
+
+        public override string ToString()
+        {
+            var c = Color == PieceColor.White ? "W" : "B";
+            return c + "-" + Type.ToString();
+        }
     }
     public enum PieceType
     {
@@ -80,4 +85,6 @@ namespace Chess
         Black,
         White,
     }
+    
+    
 }

@@ -1,39 +1,45 @@
 ﻿using System;
 using Chess;
+using JetBrains.Annotations;
 using UnityEngine;
 
 public class PieceAnimation
 {
-//todo: Initializers with Castling, Captures.
-		
 		private int pieceCount;
 
 		public Action OnStart;
 		public Action OnEnd;
+		
 		//world space
-		private readonly Vector3[] _startPoints;
-		private readonly Vector3[] _endPoints;
+		private Vector3[] _startPoints;
+		private Vector3[] _endPoints;
+
+		[CanBeNull] private Renderer _capturedRenderer;
 		
 		private readonly Transform[] _elements;
 		private Coroutine _routine;
 		// private bool _animating => _t is < 1 and > 0;
 		private float _t;
-		private float _duration = 0.75f;
+		private float _duration = 0.15f;
 
 		public bool IsComplete => _isComplete;
 		private bool _isComplete;
 
-		public PieceAnimation(SpriteRenderer sprite, Vector3 startPos, Vector3 endPos)
+		private const int MaxPieceCount = 5;
+		public PieceAnimation()
 		{
-			_elements = new[] { sprite.transform };
-			_startPoints = new Vector3[] { startPos };
-			_endPoints = new Vector3[] { endPos };
-			pieceCount = 1;
+			_elements = new Transform[MaxPieceCount];
+			_startPoints = new Vector3[MaxPieceCount];
+			_endPoints = new Vector3[MaxPieceCount];
+			pieceCount = 0;
 		}
-		
-		//animationCurve
-		
-		public void Init()
+
+		public void Clear()
+		{
+			_capturedRenderer = null;
+			pieceCount = 0;
+		}
+		public void Start()
 		{
 			OnStart?.Invoke();
 			_isComplete = false;
@@ -43,6 +49,23 @@ public class PieceAnimation
 			{
 				_elements[i].position = _startPoints[i];
 			}
+		}
+
+		public void RegisterMovement(Transform t, Vector3 start, Vector3 end)
+		{
+			_elements[pieceCount] = t;
+			_startPoints[pieceCount] = start;
+			_endPoints[pieceCount] = end;
+			pieceCount++;
+		}
+
+		public void RegisterCaptured(Renderer renderer)
+		{
+			if (_capturedRenderer != null)
+			{
+				throw new Exception("More than one piece captured during animation");
+			}
+			_capturedRenderer = renderer;
 		}
 
 		public void Tick()
@@ -68,6 +91,15 @@ public class PieceAnimation
 
 		public void Complete()
 		{
+			if (_isComplete)
+			{
+				return;
+			}
+			if (_capturedRenderer != null)
+			{
+				_capturedRenderer.enabled = false;
+			}
+			
 			_t = 1;
 			SetToEnd();
 			_isComplete = true;

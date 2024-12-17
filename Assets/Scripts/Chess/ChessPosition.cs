@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 namespace Chess
 {
-	public struct ChessPosition
+	public struct ChessPosition : IEquatable<ChessPosition>
 	{
 		private static char[] _files = new[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' };
 
@@ -68,6 +68,31 @@ namespace Chess
 		public static string XYToRankFile(int x, int y)
 		{
 			return $"{x + 1}{_files[y]}";
+		}
+
+		public bool Equals(ChessPosition other)
+		{
+			return Rank == other.Rank && File == other.File;
+		}
+
+		public override bool Equals(object obj)
+		{
+			return obj is ChessPosition other && Equals(other);
+		}
+
+		public override int GetHashCode()
+		{
+			return HashCode.Combine(Rank, File);
+		}
+
+		public static bool operator ==(ChessPosition left, ChessPosition right)
+		{
+			return left.Equals(right);
+		}
+
+		public static bool operator !=(ChessPosition left, ChessPosition right)
+		{
+			return !left.Equals(right);
 		}
 	}
 }
