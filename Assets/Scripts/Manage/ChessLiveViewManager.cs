@@ -16,7 +16,6 @@ public class ChessLiveViewManager : MonoBehaviour
     public GameState State => _state;
     private GameState _state;
     private string[] _availableChannels;
-    public GameBoard Board;
     public string defaultGameType = "best";
     //
     public ChannelList _channelList;
@@ -33,7 +32,6 @@ public class ChessLiveViewManager : MonoBehaviour
     {
         _game = new ChessGame();
         gameOverTimer = GameOverTime;
-        Board = new GameBoard();
         ChangeState(GameState.SearchingForLiveGame,true);
     }
 
@@ -61,7 +59,6 @@ public class ChessLiveViewManager : MonoBehaviour
             if (newGame)
             {
                 //dispatch from main thread
-                Board.CreateNewGame(CurrentInfo.fen);
                 _game.Init(CurrentInfo);
                 OnNewGameInfo?.Invoke(CurrentInfo);
                 newGame = false;
@@ -70,7 +67,6 @@ public class ChessLiveViewManager : MonoBehaviour
             if (_pendingMoves.Count > 0)
             {
                 var m = _pendingMoves.Dequeue();
-                Board.Move(m);
                 _game.NextMove(m);
             }
 

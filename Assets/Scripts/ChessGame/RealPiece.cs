@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using NUnit.Framework;
 
 namespace Chess
 {
+	/// <summary>
+	/// A representation of a physical piece that moves around. One piece can move from start to end as a single object.
+	/// </summary>
 	public class RealPiece
 	{
 		public readonly List<IRealPieceSubscriber> Subscribers;
