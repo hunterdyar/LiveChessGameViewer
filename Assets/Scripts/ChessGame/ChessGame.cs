@@ -9,6 +9,7 @@ namespace Chess
 	public class ChessGame
 	{
 		public static Action<RealPiece> OnNewRealPiece;
+		public static Action<ChessMove> OnMoveStart;
 		//board tint.
 		//Black PlayerInfo
 		//White PlayerInfo
@@ -112,6 +113,8 @@ namespace Chess
 
 					move.Calculate(_boardState);
 					SetStateToMove(move);
+					OnMoveStart?.Invoke(move);
+					
 					//then we ... animate....?
 				}
 			}
