@@ -6,45 +6,61 @@ using System.Threading.Tasks;
 using Chess;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
 public class ChessLiveViewManager : MonoBehaviour
 {
-    private static char[] _files = new[] { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h' }; 
     public static Action<GameState> OnGameStateChange;
-    public static Action<int,int,int,int> OnNewLastMove;
     public static Action<Info> OnNewGameInfo;
+    public static Action OnShouldClose;
     public GameState State => _state;
     private GameState _state;
     private string[] _availableChannels;
-    public GameBoard Board;
     public string defaultGameType = "best";
     //
     public ChannelList _channelList;
     public Info CurrentInfo;
     public bool newGame = false;
-    private Queue<Move> _pendingMoves = new Queue<Move>();
+    private Queue<MoveData> _pendingMoves = new Queue<MoveData>();
     private float gameOverTimer  = 0.0f;
-    public float GameOverTime = 5f;
+    public float GameOverTime = 2.5f;
+
+    private float errorRetryCountdown = 3f;
+    //refactor
+    private ChessGame _game;
     private void Awake()
     {
+        _game = new ChessGame();
         gameOverTimer = GameOverTime;
-        Board = new GameBoard();
         ChangeState(GameState.SearchingForLiveGame,true);
     }
 
     void Start()
-    { 
+    {
+        GameSetings.LoadSetings();
         FindNewGame();
     }
 
     private void Update()
     {
+        if (errorRetryCountdown <= 0)
+        {
+            errorRetryCountdown = 3f;
+            OnShouldClose?.Invoke();
+            //unload all other scenes.
+            for (int i = 1; i < SceneManager.loadedSceneCount; i++)
+            {
+                var ulo = SceneManager.UnloadSceneAsync(SceneManager.GetSceneAt(i).name);
+            }
+            //unload scene 0 and reload it. that's this scene!
+            SceneManager.LoadScene(0);
+        }
         if (_state == GameState.WatchingGame)
         {
             if (newGame)
             {
                 //dispatch from main thread
-                Board.SetFromFen(CurrentInfo.fen);
+                _game.Init(CurrentInfo);
                 OnNewGameInfo?.Invoke(CurrentInfo);
                 newGame = false;
             }
@@ -52,41 +68,32 @@ public class ChessLiveViewManager : MonoBehaviour
             if (_pendingMoves.Count > 0)
             {
                 var m = _pendingMoves.Dequeue();
-                Board.SetFromFen(m.FEN);
-                UpdateLastMove(m.LastMove);
+                _game.NextMove(m);
             }
+
+            //this is the queue thing again, but animations will ask to block it.
+            _game.Tick();
+            //
+            
         }else if (State == GameState.SearchingForLiveGame)
         {
             FindNewGame();
         }else if (State == GameState.GameComplete)
         {
+            if (!_game.DoneDisplaying())
+            {
+                return;
+            }
             gameOverTimer -= Time.deltaTime;
             if (gameOverTimer <= 0.0f)
             {
                 ChangeState(GameState.SearchingForLiveGame);
                 gameOverTimer = GameOverTime;
             }
-        }
-    }
-
-    private void UpdateLastMove(string lm)
-    {
-        if (string.IsNullOrEmpty(lm))
+        }else if (State == GameState.Error)
         {
-            return;
+            errorRetryCountdown -= Time.deltaTime;
         }
-        if (lm.Length != 4)
-        {
-            Debug.LogWarning($"Unknown last move {lm}");
-            return;
-        }
-        //1-8 int is the (row) rank
-        //a-h char is the (col) file
-        int ro = Array.IndexOf(_files,lm[0]);
-        int fo = int.Parse(lm[1].ToString())-1;
-        int rn = Array.IndexOf(_files,lm[2]);
-        int fn = int.Parse(lm[3].ToString())-1;
-        OnNewLastMove?.Invoke(ro, fo, rn, fn);
     }
 
     async void FindNewGame()
@@ -94,7 +101,15 @@ public class ChessLiveViewManager : MonoBehaviour
         ChangeState(GameState.WatchingGame);
         await UpdateChannels();
         var game = _channelList.GetGameIDForChannelName(defaultGameType);
-        HookIntoGame(game);
+        
+        if (game == "")
+        {
+            ChangeState(GameState.Error);   
+        }
+        else
+        {
+            HookIntoGame(game);
+        }
     }
     
     private void ChangeState(GameState state, bool sendUpdateIfSame = false)
@@ -161,13 +176,10 @@ public class ChessLiveViewManager : MonoBehaviour
         else
         {
             //this is a single move
-            Move m = new Move(update);
+            MoveData m = new MoveData(update);
             _pendingMoves.Enqueue(m);
         }
     }
 
-    public static string XYToRankFile(int x, int y)
-    {
-        return $"{x+1}{_files[y]}";
-    }
+   
 }

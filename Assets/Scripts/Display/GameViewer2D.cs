@@ -1,22 +1,23 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using Chess;
-using DefaultNamespace;
 using UnityEngine;
 using UnityEngine.Serialization;
 
 public class GameViewer2D : MonoBehaviour
 {
     public Sprite squareSprite;
+    private Sprite tintSprite => squareSprite;
     [FormerlySerializedAs("brightTint")] public Color brightTile;
     [FormerlySerializedAs("darkTint")] public Color darkTile;
     [FormerlySerializedAs("TintColor")] public Color tintColor;
-    public float tintAmount;
     private SpriteRenderer[,] _tiles;
-    private SpriteRenderer[,] _pieces;
+    private SpriteRenderer[,] _tints;
     public ChessSpriteSet chessSpriteSet;
+    [FormerlySerializedAs("_piecePrefab")] public SpritePieceDisplay piecePrefab;
 
-    private (int r, int f) _lastMoveOld = (-1, -1);
-    private (int r, int f) _lastMoveNew = (-1, -1);
+    public readonly PieceAnimation CurrentAnimation = new PieceAnimation();
     void Start()
     {
         InitBoard();
@@ -24,55 +25,64 @@ public class GameViewer2D : MonoBehaviour
 
     private void OnEnable()
     {
-        GameBoard.OnSquareChanged += OnSquareChanged;
-        ChessLiveViewManager.OnNewLastMove += OnNewLastMove;
-    }private void OnDisable()
+       ChessGame.OnNewRealPiece += OnNewRealPiece;
+       ChessGame.OnMoveStart += OnMoveStart;
+       ChessGame.OnMove += OnMove;
+    }
+    
+    private void OnDisable()
     {
-        GameBoard.OnSquareChanged += OnSquareChanged;
-        ChessLiveViewManager.OnNewLastMove -= OnNewLastMove;
-
+        ChessGame.OnNewRealPiece -= OnNewRealPiece;
+        ChessGame.OnMoveStart -= OnMoveStart;
+        ChessGame.OnMove -= OnMove;
     }
 
-    private void OnNewLastMove(int ro,int fo, int rn, int fn)
+    private void Update()
     {
-        if (ro >= 8 || fo >= 8 || rn >= 8 || fn >= 8)
+        if(!CurrentAnimation.IsComplete){
+            CurrentAnimation.Tick(Time.deltaTime);
+        }
+    }
+
+    private void OnMoveStart()
+    {
+       CurrentAnimation.Complete();
+       //
+       CurrentAnimation.Clear();
+    }
+    private void OnMove(ChessMove cmove)
+    {
+        ClearLastTint();
+        foreach (var move in cmove.Moves)
         {
-            //EHHHH??
-            return;
+            _tints[move.oldPos.File, move.oldPos.Rank].enabled = true;
+            _tints[move.newPos.File, move.newPos.Rank].enabled = true;
         }
         
-        //Reset color to normal
-        if (_lastMoveOld.r >= 0 && _lastMoveOld.f >= 0)
+        CurrentAnimation.Start();
+        if (!GameSetings.Animate)
         {
-            int r = _lastMoveOld.r;
-            int f = _lastMoveOld.f;
-            SetColor(_tiles[r, f],r, f);
+            CurrentAnimation.Complete();
         }
-
-        if (_lastMoveNew.r >= 0 && _lastMoveNew.f >= 0)
-        {
-            int r = _lastMoveNew.r;
-            int f = _lastMoveNew.f;
-            SetColor(_tiles[r, f],r, f);
-        }
-        _lastMoveOld = (ro, fo);
-        SetColor(_tiles[ro, fo], ro, fo,tintAmount);
-        _lastMoveNew = (rn, fn);
-        SetColor(_tiles[rn, fn], rn, fn,tintAmount);
     }
-
-    private void OnSquareChanged(int r, int c, Piece? piece)
-    {
-        Sprite sprite = null;
-        if (piece.HasValue)
-        {
-            sprite = chessSpriteSet.GetSprite(piece.Value);
-        }
-
-        _pieces[c,r].sprite = sprite;
-    }
-
     
+    private void OnNewRealPiece(RealPiece rp)
+    {
+        var go = Instantiate(piecePrefab,transform);
+        go.Init(rp,this);
+    }
+
+    private void ClearLastTint()
+    {
+        //todo: do this as an array of like, 4 things.
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                _tints[i, j].enabled = false;
+            }
+        }
+    }
 
     void InitBoard()
     {
@@ -83,13 +93,13 @@ public class GameViewer2D : MonoBehaviour
     private void SpawnBoard()
     {
         _tiles = new SpriteRenderer[8, 8];
-        _pieces = new SpriteRenderer[8, 8];
+        _tints = new SpriteRenderer[8, 8];
         for (int r = 0; r < 8; r++)
         {
             for (int f = 0; f < 8; f++)
             {
                 var s = new GameObject();
-                s.name = "Tile " + ChessLiveViewManager.XYToRankFile(r, f);
+                s.name = "Tile " + ChessPosition.XYToRankFile(r, f);
                 var sr = s.AddComponent<SpriteRenderer>();
                 sr.sprite = squareSprite;
                 SetColor(sr,r,f);
@@ -101,14 +111,15 @@ public class GameViewer2D : MonoBehaviour
                 
                 //Put a piece sprite into our engine and leave it empty for now.
                 var p = new GameObject();
-                p.name = "Piece" + ChessLiveViewManager.XYToRankFile(r, f);
+                p.name = "Tint" + ChessPosition.XYToRankFile(r, f);
                 var psr = p.AddComponent<SpriteRenderer>();
                 
-                psr.sprite = null;
-                psr.color = Color.white;
-                _pieces[r, f] = psr;
-                p.transform.SetParent(transform);
-                p.transform.localPosition = new Vector3(r, f, 0);
+                psr.sprite = tintSprite;
+                psr.color = tintColor;
+                psr.enabled = false;
+                _tints[r, f] = psr;
+                p.transform.SetParent(s.transform);
+                p.transform.localPosition = Vector3.zero;
                 psr.sortingOrder = 10;
             }
         }
@@ -129,6 +140,10 @@ public class GameViewer2D : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
-        
+    }
+
+    public Vector3 GetWorldPosition(ChessPosition position)
+    {
+        return new Vector3(position.File, position.Rank, 0);
     }
 }

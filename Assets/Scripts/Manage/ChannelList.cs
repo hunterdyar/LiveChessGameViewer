@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 
 [System.Serializable]
@@ -18,6 +19,10 @@ using System.Linq;
 
         public string GetGameIDForChannelName(string name)
         {
+            if (channels.Count == 0)
+            {
+                return "";
+            }
             return channels.First(x => x.ChannelName.ToLower() == name.ToLower()).Data.gameId;
         }
         private bool Parse()
