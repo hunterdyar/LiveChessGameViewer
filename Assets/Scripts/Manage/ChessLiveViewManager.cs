@@ -6,11 +6,13 @@ using System.Threading.Tasks;
 using Chess;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
 public class ChessLiveViewManager : MonoBehaviour
 {
     public static Action<GameState> OnGameStateChange;
     public static Action<Info> OnNewGameInfo;
+    public static Action OnShouldClose;
     public GameState State => _state;
     private GameState _state;
     private string[] _availableChannels;
@@ -23,8 +25,13 @@ public class ChessLiveViewManager : MonoBehaviour
     private Queue<Move> _pendingMoves = new Queue<Move>();
     private float gameOverTimer  = 0.0f;
     public float GameOverTime = 5f;
+
+    private float errorRetryCountdown = 3f;
+    //refactor
+    private ChessGame _game;
     private void Awake()
     {
+        _game = new ChessGame();
         gameOverTimer = GameOverTime;
         Board = new GameBoard();
         ChangeState(GameState.SearchingForLiveGame,true);
@@ -37,12 +44,25 @@ public class ChessLiveViewManager : MonoBehaviour
 
     private void Update()
     {
+        if (errorRetryCountdown <= 0)
+        {
+            errorRetryCountdown = 3f;
+            OnShouldClose?.Invoke();
+            //unload all other scenes.
+            for (int i = 1; i < SceneManager.loadedSceneCount; i++)
+            {
+                var ulo = SceneManager.UnloadSceneAsync(SceneManager.GetSceneAt(i).name);
+            }
+            //unload scene 0 and reload it. that's this scene!
+            SceneManager.LoadScene(0);
+        }
         if (_state == GameState.WatchingGame)
         {
             if (newGame)
             {
                 //dispatch from main thread
                 Board.CreateNewGame(CurrentInfo.fen);
+                _game.Init(CurrentInfo);
                 OnNewGameInfo?.Invoke(CurrentInfo);
                 newGame = false;
             }
@@ -50,8 +70,15 @@ public class ChessLiveViewManager : MonoBehaviour
             if (_pendingMoves.Count > 0)
             {
                 var m = _pendingMoves.Dequeue();
+                Debug.Log(m.FEN);
                 Board.Move(m);
+                _game.NextMove(m);
             }
+
+            //this is the queue thing again, but animations will ask to block it.
+            _game.Tick();
+            //
+            
         }else if (State == GameState.SearchingForLiveGame)
         {
             FindNewGame();
@@ -63,6 +90,9 @@ public class ChessLiveViewManager : MonoBehaviour
                 ChangeState(GameState.SearchingForLiveGame);
                 gameOverTimer = GameOverTime;
             }
+        }else if (State == GameState.Error)
+        {
+            errorRetryCountdown -= Time.deltaTime;
         }
     }
 
@@ -71,7 +101,15 @@ public class ChessLiveViewManager : MonoBehaviour
         ChangeState(GameState.WatchingGame);
         await UpdateChannels();
         var game = _channelList.GetGameIDForChannelName(defaultGameType);
-        HookIntoGame(game);
+        
+        if (game == "")
+        {
+            ChangeState(GameState.Error);   
+        }
+        else
+        {
+            HookIntoGame(game);
+        }
     }
     
     private void ChangeState(GameState state, bool sendUpdateIfSame = false)

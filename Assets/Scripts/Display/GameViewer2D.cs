@@ -93,7 +93,6 @@ public class GameViewer2D : MonoBehaviour
                 //Unset and animate back to norm.
                 _currentAnimation.Init();
                 TickCurrentAnimation(); 
-                Debug.Log("Start Next Animation");
             }
         }
     }
@@ -185,5 +184,10 @@ public class GameViewer2D : MonoBehaviour
             Destroy(child.gameObject);
         }
         
+    }
+
+    public Vector3 GetWorldPosition(ChessPosition position)
+    {
+        return new Vector3(position.Rank, position.File, 0);
     }
 }

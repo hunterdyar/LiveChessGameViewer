@@ -61,6 +61,12 @@ namespace Chess
                     break;
             }
         }
+
+        public override string ToString()
+        {
+            var c = Color == PieceColor.White ? "W" : "B";
+            return c + "-" + Type.ToString();
+        }
     }
     public enum PieceType
     {
@@ -79,4 +85,6 @@ namespace Chess
         Black,
         White,
     }
+    
+    
 }

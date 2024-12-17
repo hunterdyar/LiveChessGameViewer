@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace Chess
@@ -14,16 +15,22 @@ namespace Chess
 		private int _halfmoveClock;
 		public int MoveNumber => _moveNumber;
 		private int _moveNumber;
+		public string FENPieces => _piecesEncoded;
 		private string _piecesEncoded;
 		private Piece?[,] _board = null;
 		private readonly List<PositionChange> _changes = new List<PositionChange>();
 
 		//list of moves
+		//todo: these don't need to be lists, we can do it without allocation
+		public List<(ChessPosition oldPos, ChessPosition newPos)> Moves => _moves;
 		private List<(ChessPosition oldPos, ChessPosition newPos)> _moves = new List<(ChessPosition, ChessPosition)>();
 		//list of captures
+		public List<ChessPosition> Captures = new List<ChessPosition>(); 
 		private List<ChessPosition> _captures = new List<ChessPosition>();
-		//
 
+		public List<(ChessPosition Pos, Piece Piece)> Upgrades => _upgrades;
+		private List<(ChessPosition, Piece)> _upgrades = new List<(ChessPosition,Piece)>();
+		
 		private string givenMove;
 		public ChessMove(Move move)
 		{
@@ -114,9 +121,16 @@ namespace Chess
 			        }
 		        }
 	        }
+
+	        if (_changes.GroupBy(x => x.Position).Max(x => x.Count()) > 1)
+	        {
+		        throw new Exception("Invalid change set. multiple changes to same square. literally how?");
+	        }
+	        Debug.Log($"Changes Count {_changes.Count}");
 	        //now we know everything that changed. Let's figure out what happened!
 	        if (_changes.Count == 0)
 	        {
+		        Debug.LogWarning("Nothing changed. Is this right? could happen during init/first move I think...");
 		        return;
 	        }
 
@@ -131,10 +145,12 @@ namespace Chess
 			        _captures.Add(_changes[1].Position);
 		        }
 
-		        if (_changes[0].Piece.Equals(_changes[1].Piece))
+		        if ((_changes[0].Piece.HasValue && _changes[0].Piece.Equals(_changes[1].OldPiece)) ||
+		            (_changes[1].Piece.HasValue && _changes[1].Piece.Equals(_changes[0].OldPiece)))
 		        {
+			        //test agiainst removed becuase other could be "added" OR "captured"
 			        var oldPos = _changes[0].Change == SquareChange.Removed ? _changes[0].Position : _changes[1].Position;
-			        var newPos = _changes[0].Change == SquareChange.Added ? _changes[0].Position : _changes[1].Position;
+			        var newPos = _changes[0].Change == SquareChange.Removed ? _changes[1].Position : _changes[0].Position;
 			        if (oldPos.Equals(newPos))
 			        {
 				        throw new Exception("This isn't a valid move!");
@@ -152,6 +168,16 @@ namespace Chess
 	        {
 		        //en passant! two removed (from and capture) one added.
 		        //uh, or castle? If the rook moves to where the king is or vise versa. I'll look it up later.
+		        
+		        var movedTo = _changes.First(x => x.Change == SquareChange.Added);
+		        var movedFrom = _changes.First(x=>x.Change == SquareChange.Removed && x.OldPiece.Equals(movedTo.Piece));
+		        if (!movedTo.Piece.HasValue || movedTo.Piece.Value.Type != PieceType.Pawn)
+		        {
+			        throw new NotImplementedException("This isn't an en passant!");
+		        }
+		        var captured = _changes.First(x=>x.Change == SquareChange.Removed && !x.OldPiece.Equals(movedFrom.Piece));
+		        _captures.Add(captured.Position);
+		        _moves.Add((movedFrom.Position,movedTo.Position));
 	        }
 
 	        if (_changes.Count == 4)
@@ -163,12 +189,21 @@ namespace Chess
 		        {
 			        if (change.Piece.HasValue)
 			        {
-				        if (change.Piece.Value.Type != PieceType.King || change.Piece.Value.Type != PieceType.Rook)
+				        var p = change.Piece ?? change.OldPiece;
+				        if (p == null || (p.Value.Type != PieceType.King && p.Value.Type != PieceType.Rook))
 				        {
 					        throw new Exception("This isn't a castle!");
 				        }
 			        }
 		        }
+		        
+		        var kingOld = _changes.First(x => x.Change == SquareChange.Removed && x.OldPiece.Value.Type == PieceType.King);
+		        var kingNew = _changes.First(x => x.Change == SquareChange.Added && x.Piece.Value.Type == PieceType.King);
+		        var rookOld = _changes.First(x=>x.Change == SquareChange.Removed && x.OldPiece.Value.Type == PieceType.Rook);
+		        var rookNew = _changes.First(x => x.Change == SquareChange.Added && x.Piece.Value.Type == PieceType.Rook);
+		        
+		        _moves.Add((rookOld.Position,rookNew.Position));
+		        _moves.Add((kingOld.Position,kingNew.Position));
 	        }
 	        
 	        if (_changes.Count == 1)
@@ -178,8 +213,13 @@ namespace Chess
 		        {
 			        throw new Exception("This isn't an upgrade!");
 		        }
+		        _upgrades.Add((_changes[0].Position, _changes[0].Piece.Value));
 	        }
-	        
+
+	        if (_changes.Count > 4)
+	        {
+		       // throw new Exception("wtf");
+	        }
 	        //todo: Validate our string against the move's string. (givenMove)
         }
 
