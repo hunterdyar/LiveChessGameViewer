@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Chess;
-using DefaultNamespace;
 using UnityEngine;
 using UnityEngine.Serialization;
 
