@@ -109,7 +109,10 @@ public class PieceAnimation
 		{
 			for (int i = 0; i < pieceCount; i++)
 			{
-				_elements[i].position = _endPoints[i];
+				if (_elements[i] != null)
+				{
+					_elements[i].position = _endPoints[i];
+				}
 			}
 		}
 	}

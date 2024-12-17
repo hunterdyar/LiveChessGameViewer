@@ -11,6 +11,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/2DView.unity
     guid: bfd08e9cf89b440869ee2f6e04ff7202
+  - enabled: 1
+    path: Assets/Scenes/3DView-Wood.unity
+    guid: c6b27ebb5182b154dbe2736a7994e37d
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0
