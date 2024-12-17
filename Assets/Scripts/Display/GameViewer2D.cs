@@ -21,8 +21,8 @@ public class GameViewer2D : MonoBehaviour
     
     private ChessPosition? _lastMoveOld = null;
     private ChessPosition? _lastMoveNew = null;
-    
-    private readonly List<PieceAnimation> _currentAnimations = new List<PieceAnimation>();
+
+    public readonly PieceAnimation CurrentAnimation = new PieceAnimation();
     void Start()
     {
         InitBoard();
@@ -42,31 +42,18 @@ public class GameViewer2D : MonoBehaviour
         ChessGame.OnMove -= OnMove;
     }
 
-    public void StartAnimation(PieceAnimation animation)
-    {
-        _currentAnimations.Add(animation);
-        animation.Init();
-    }
-
     private void Update()
     {
-        foreach (var anim in _currentAnimations)
-        {
-            if(!anim.IsComplete){
-                anim.Tick(Time.deltaTime);
-            }
+        if(!CurrentAnimation.IsComplete){
+            CurrentAnimation.Tick(Time.deltaTime);
         }
     }
 
     private void OnMoveStart()
     {
-        //Snap current animation to the end. Wait they only just got registered.
-        for (int i = 0; i < _currentAnimations.Count; i++)
-        {
-            _currentAnimations[i].Complete();
-        }
-
-        _currentAnimations.Clear();
+       CurrentAnimation.Complete();
+       //
+       CurrentAnimation.Clear();
     }
     private void OnMove(ChessMove cmove)
     {
@@ -76,7 +63,8 @@ public class GameViewer2D : MonoBehaviour
             _tints[move.oldPos.Rank, move.oldPos.File].enabled = true;
             _tints[move.newPos.Rank, move.newPos.File].enabled = true;
         }
-
+        
+        CurrentAnimation.Start();
     }
     
     private void OnNewRealPiece(RealPiece rp)
