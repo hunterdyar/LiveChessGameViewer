@@ -173,7 +173,7 @@ namespace Chess
 			        {
 				       var pawnChange = pawnFrom.First();
 				       var upgrade = upgradeAdd.First();
-				        if (pawnChange.OldPiece.Value.Type == upgrade.Piece.Value.Type)
+				        if (pawnChange.OldPiece.Value.Color == upgrade.Piece.Value.Color)
 				        {
 					        _moves.Add((pawnChange.Position, upgrade.Position));
 					        _upgrades.Add((upgrade.Position, upgrade.Piece.Value));
