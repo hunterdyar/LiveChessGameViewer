@@ -16,9 +16,9 @@ public class ChessLiveViewManager : MonoBehaviour
     public GameState State => _state;
     private GameState _state;
     private string[] _availableChannels;
-    public string defaultGameType = "best";
     //
-    public ChannelList _channelList;
+    public static ChannelList ChannelList => _channelList;
+    public static ChannelList _channelList;
     public Info CurrentInfo;
     public bool newGame = false;
     private Queue<MoveData> _pendingMoves = new Queue<MoveData>();
@@ -38,6 +38,7 @@ public class ChessLiveViewManager : MonoBehaviour
     void Start()
     {
         GameSetings.LoadSetings();
+        SceneManager.LoadSceneAsync("Settings", LoadSceneMode.Additive);
         FindNewGame();
     }
 
@@ -100,7 +101,7 @@ public class ChessLiveViewManager : MonoBehaviour
     {
         ChangeState(GameState.WatchingGame);
         await UpdateChannels();
-        var game = _channelList.GetGameIDForChannelName(defaultGameType);
+        var game = _channelList.GetGameIDForChannelName(GameSetings.ChessChannel);
         
         if (game == "")
         {

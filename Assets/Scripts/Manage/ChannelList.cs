@@ -156,4 +156,9 @@ using UnityEngine;
                 throw new Exception($"Can't parse {symbol} at position {pointer}");
             }
         }
+
+        public int IndexOf(string chessChannel)
+        {
+            return channels.FindIndex(x=> x.ChannelName==chessChannel);
+        }
     }

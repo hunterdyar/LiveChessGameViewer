@@ -41,8 +41,7 @@ namespace DefaultNamespace
 				CurrentAnimation.Complete();
 			}
 		}
-
-
+		
 		private void OnMoveStart()
 		{
 			CurrentAnimation.Complete();
@@ -53,6 +52,11 @@ namespace DefaultNamespace
 		{
 			var go = Instantiate(piecePrefab, transform);
 			go.Init(realPiece, this);
+		}
+
+		private void OnDestroy()
+		{
+			CurrentAnimation.Clear();
 		}
 	}
 }

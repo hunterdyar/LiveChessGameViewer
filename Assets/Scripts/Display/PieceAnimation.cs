@@ -78,7 +78,11 @@ public class PieceAnimation
 			{
 				for (var i = 0; i < pieceCount; i++)
 				{
-					_elements[i].position = Vector3.Lerp(_startPoints[i],_endPoints[i],_t);
+					//we weren't supposed to have to this check but pieces destroy themselves and the 
+					if (_elements[i] != null)
+					{
+						_elements[i].position = Vector3.Lerp(_startPoints[i], _endPoints[i], _t);
+					}
 				}
 			}
 			else

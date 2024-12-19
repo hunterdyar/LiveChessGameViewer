@@ -1,19 +1,17 @@
 using System;
 using System.Collections;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class ViewManager : MonoBehaviour
 {
-    public string displayScene;
-
-    private string currentExtraScene;
-    
+    private int _currentViewScene;
+    public ViewScene[] Views; 
     IEnumerator Start()
     {
-        currentExtraScene = displayScene;
-        
-        var load = SceneManager.LoadSceneAsync(displayScene, LoadSceneMode.Additive);
+        _currentViewScene = GameSetings.ViewScene;
+        var load = SceneManager.LoadSceneAsync(Views[_currentViewScene].SceneName, LoadSceneMode.Additive);
 
         while (!load.isDone)
         {
@@ -23,10 +21,26 @@ public class ViewManager : MonoBehaviour
         }
     }
 
-    public IEnumerator SwitchView()
+    public void SwitchView(int newView)
     {
-        var unload = SceneManager.UnloadSceneAsync(currentExtraScene);
-        var load= SceneManager.LoadSceneAsync(displayScene, LoadSceneMode.Additive);
-        yield break;
+        var name = Views[newView].SceneName;
+        StartCoroutine(DoSwitchView(name));
+    }
+    public IEnumerator DoSwitchView(string sceneName)
+    {
+        var unload = SceneManager.UnloadSceneAsync(Views[_currentViewScene].SceneName);
+        var load= SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+        while (!(unload.isDone && load.isDone))
+        {
+            yield return null;
+        }
+        //done!
+    }
+
+    [Serializable]
+    public struct ViewScene
+    {
+        public string DisplayName;
+        public string SceneName;
     }
 }
