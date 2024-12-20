@@ -28,7 +28,7 @@ namespace Chess
 			Subscribers.Add(subscriber);
 		}
 
-		public void Unscribe(IRealPieceSubscriber subscriber)
+		public void Unsubscribe(IRealPieceSubscriber subscriber)
 		{
 			if (Subscribers.Contains(subscriber))
 			{
@@ -64,9 +64,10 @@ namespace Chess
 
 		public void Destroy()
 		{
-			foreach (var sub in Subscribers)
+			for (var i = Subscribers.Count - 1; i >= 0; i--)
 			{
-				sub.Destroy();
+				var sub = Subscribers[i];
+				sub?.DoDestroy();
 			}
 		}
 	}

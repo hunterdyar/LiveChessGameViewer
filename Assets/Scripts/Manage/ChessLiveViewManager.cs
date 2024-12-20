@@ -182,5 +182,14 @@ public class ChessLiveViewManager : MonoBehaviour
         }
     }
 
-   
+
+    public void AskForGameInit()
+    {
+        if (_state == GameState.WatchingGame)
+        {
+            OnNewGameInfo?.Invoke(CurrentInfo);
+        }
+
+        _game.RecreateRealPieces();
+    }
 }

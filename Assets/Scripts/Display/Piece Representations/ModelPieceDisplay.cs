@@ -1,17 +1,19 @@
 ﻿using Chess;
 using UnityEngine;
 
-namespace DefaultNamespace
+namespace Chess
 {
 	public class ModelPieceDisplay : MonoBehaviour, IRealPieceSubscriber
 	{
 		private MeshRenderer _renderer;
 		private GameViewer3D _viewer;
 		private GameObject _model;
+		private RealPiece _realPiece;
 		public void Init(RealPiece rp, GameViewer3D viewer)
 		{
 			_viewer = viewer;
-			rp.Subscribe(this);
+			_realPiece = rp;
+			_realPiece.Subscribe(this);
 
 			//set self to initial rp position. Just using these functions because there is no animation.
 			transform.position = _viewer.WorldGrid.GetWorldPosition(rp.CurrentPosition);
@@ -27,6 +29,11 @@ namespace DefaultNamespace
 
 		public void Move(ChessPosition newPosition)
 		{
+			if (_viewer.WorldGrid == null)
+			{
+				//silly catch for load/unload sequencing
+				return;
+			}
 			var newPos = _viewer.WorldGrid.GetWorldPosition(newPosition);
 			_viewer.CurrentAnimation.RegisterMovement(transform, transform.position, newPos);
 		}
@@ -39,9 +46,18 @@ namespace DefaultNamespace
 			_renderer = _model.GetComponentInChildren<MeshRenderer>();
 		}
 
-		public void Destroy()
+		public void DoDestroy()
 		{
-			Destroy(gameObject);
+			//unity is weird
+			if (this == null)
+			{
+				return;
+			}
+			_realPiece?.Unsubscribe(this);
+			if (gameObject != null)
+			{
+				GameObject.Destroy(gameObject);
+			}
 		}
 	}
 }

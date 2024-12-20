@@ -18,9 +18,16 @@ public class GameViewer2D : MonoBehaviour
     [FormerlySerializedAs("_piecePrefab")] public SpritePieceDisplay piecePrefab;
 
     public readonly PieceAnimation CurrentAnimation = new PieceAnimation();
+    private ChessLiveViewManager _chessLiveViewManager;
+    void Awake()
+    {
+        //too lazy to set up singleton
+        _chessLiveViewManager = FindFirstObjectByType<ChessLiveViewManager>();
+    }
     void Start()
     {
         InitBoard();
+        _chessLiveViewManager.AskForGameInit();
     }
 
     private void OnEnable()

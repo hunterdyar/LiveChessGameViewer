@@ -2,7 +2,7 @@
 using Chess;
 using UnityEngine;
 
-namespace DefaultNamespace
+namespace Chess
 {
 	public class GameViewer3D : MonoBehaviour
 	{
@@ -30,6 +30,12 @@ namespace DefaultNamespace
 			ChessGame.OnNewRealPiece -= OnNewRealPiece;
 			ChessGame.OnMoveStart -= OnMoveStart;
 			ChessGame.OnMove -= OnMove;
+		}
+
+		void Start()
+		{
+			var manager = FindFirstObjectByType<ChessLiveViewManager>();
+			manager.AskForGameInit();
 		}
 
 		private void OnMove(ChessMove cmove)

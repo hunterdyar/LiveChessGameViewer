@@ -2,7 +2,7 @@
 using Chess;
 using UnityEngine;
 
-namespace DefaultNamespace
+namespace Chess
 {
 	public class WorldChessGrid : MonoBehaviour
 	{

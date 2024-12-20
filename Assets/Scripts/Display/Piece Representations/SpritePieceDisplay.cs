@@ -5,12 +5,14 @@ public class SpritePieceDisplay : MonoBehaviour, IRealPieceSubscriber
 {
 	private SpriteRenderer _renderer;
 	private GameViewer2D _viewer;
+	private RealPiece _realPiece;
 
 	public static readonly int NormalRenderPriority = 20;
 	public void Init(RealPiece rp, GameViewer2D viewer)
 	{
+		_realPiece = rp;
 		_viewer = viewer;
-		rp.Subscribe(this);
+		_realPiece.Subscribe(this);
 		
 		//set self to initial rp position. Just using these functions because there is no animation.
 		transform.position = _viewer.GetWorldPosition(rp.CurrentPosition);
@@ -41,8 +43,15 @@ public class SpritePieceDisplay : MonoBehaviour, IRealPieceSubscriber
 		_renderer.sprite = _viewer.chessSpriteSet.GetSprite(newPiece);
 	}
 
-	public void Destroy()
+	public void DoDestroy()
 	{
+		//unity is weird
+		if (this == null)
+		{
+			return;
+		}
+		_realPiece.Unsubscribe(this);
+		
 		Destroy(gameObject);
 	}
 }

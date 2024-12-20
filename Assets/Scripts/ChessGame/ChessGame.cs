@@ -109,8 +109,13 @@ namespace Chess
 						}
 					}else if (move.MoveNumber - _boardStateMoveNumber != 1)
 					{
-						//Reinit???
-						Debug.LogWarning($"Did not receive moves in proper sequential order. Did {_boardStateMoveNumber}, got {move.MoveNumber}. Halfcount is {_halfMoveCountWithThisMoveNumber}");
+						if (move.MoveNumber != 0)
+						{
+							//Reinit???
+							Debug.LogWarning(
+								$"Did not receive moves in proper sequential order. Did {_boardStateMoveNumber}, got {move.MoveNumber}. Halfcount is {_halfMoveCountWithThisMoveNumber}");
+						}
+
 						//todo: call error condition back to manager
 						return;
 						
@@ -203,6 +208,14 @@ namespace Chess
 				return false;
 			}
 			return true;
+		}
+
+		public void RecreateRealPieces()
+		{
+			if (_boardState != null)
+			{
+				InitRealPieces(_boardState);
+			}
 		}
 	}
 }

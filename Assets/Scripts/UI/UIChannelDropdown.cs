@@ -27,6 +27,11 @@ namespace UI
         {
             _dropdown.ClearOptions();
             //turns the string array into this array with capital each word.
+            if (ChessLiveViewManager.ChannelList == null)
+            {
+                //probably just launching these scene on it's own to test.
+                return;
+            }
             var current = ChessLiveViewManager.ChannelList.IndexOf(GameSetings.ChessChannel);
             if (current < 0)
             {

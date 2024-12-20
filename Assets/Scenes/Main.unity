@@ -164,10 +164,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Views:
-  - DisplayName: 2D
-    SceneName: 2DView
   - DisplayName: 3D
     SceneName: 3DView-Wood
+  - DisplayName: 2D
+    SceneName: 2DView
 --- !u!1 &1663162191
 GameObject:
   m_ObjectHideFlags: 0
