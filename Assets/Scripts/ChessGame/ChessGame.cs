@@ -109,7 +109,7 @@ namespace Chess
 						}
 					}else if (move.MoveNumber - _boardStateMoveNumber != 1)
 					{
-						if (move.MoveNumber != 0)
+						if (_boardStateMoveNumber != 0)
 						{
 							//Reinit???
 							Debug.LogWarning(

@@ -19,13 +19,10 @@ public class GameViewer2D : MonoBehaviour
 
     public readonly PieceAnimation CurrentAnimation = new PieceAnimation();
     private ChessLiveViewManager _chessLiveViewManager;
-    void Awake()
-    {
-        //too lazy to set up singleton
-        _chessLiveViewManager = FindFirstObjectByType<ChessLiveViewManager>();
-    }
+    
     void Start()
     {
+        _chessLiveViewManager = ChessLiveViewManager.Instance;
         InitBoard();
         _chessLiveViewManager.AskForGameInit();
     }

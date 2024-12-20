@@ -12,3 +12,5 @@ https://polyhaven.com/a/dark_wood
 
 Light Chess Piece mat
 https://polyhaven.com/a/oak_veneer_01
+
+Font: https://www.fontsquirrel.com/fonts/josefin-sans
