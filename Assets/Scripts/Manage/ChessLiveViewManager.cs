@@ -88,6 +88,10 @@ public class ChessLiveViewManager : MonoBehaviour
             {
                 return;
             }
+            else
+            {
+                _game.SetGameOver();
+            }
             gameOverTimer -= Time.deltaTime;
             if (gameOverTimer <= 0.0f)
             {

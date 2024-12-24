@@ -35,7 +35,7 @@ namespace Chess
 		private List<RealPiece> _capturedPieces = new List<RealPiece>();
 		//List of Moves, basically. Each move has every possible thing we could need:
 		private Queue<ChessMove> _moves = new Queue<ChessMove>();
-
+		private bool _gameOverCalled = false;
 		public void Init(Info currentInfo)
 		{
 			_moves.Clear();
@@ -100,6 +100,7 @@ namespace Chess
 				if (move.MoveNumber == 1)
 				{
 					//start of the game!
+					Debug.Log("First move");
 					_boardState = ChessMove.DecodeBoard(move.FENPieces);
 					_boardStateMoveNumber = 1;
 					InitRealPieces(_boardState);
@@ -243,6 +244,15 @@ namespace Chess
 		{
 			//set the state to over.
 			_winner = winner;
+		}
+
+		public void SetGameOver()
+		{
+			if (!_gameOverCalled)
+			{
+				OnWinner?.Invoke(_winner);
+				_gameOverCalled = true;
+			}
 		}
 	}
 }
