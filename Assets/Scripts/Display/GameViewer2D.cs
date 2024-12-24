@@ -32,15 +32,18 @@ public class GameViewer2D : MonoBehaviour
        ChessGame.OnNewRealPiece += OnNewRealPiece;
        ChessGame.OnMoveStart += OnMoveStart;
        ChessGame.OnMove += OnMove;
+       ChessGame.OnNewGameStart += ClearLastTint;
     }
+
     
     private void OnDisable()
     {
         ChessGame.OnNewRealPiece -= OnNewRealPiece;
         ChessGame.OnMoveStart -= OnMoveStart;
         ChessGame.OnMove -= OnMove;
+        ChessGame.OnNewGameStart -= ClearLastTint;
     }
-
+    
     private void Update()
     {
         if(!CurrentAnimation.IsComplete){

@@ -38,6 +38,7 @@ namespace Chess
 		private bool _gameOverCalled = false;
 		public void Init(Info currentInfo)
 		{
+			OnNewGameStart?.Invoke();
 			_moves.Clear();
 			ClearRealPieces();
 			//store information about the players?
@@ -236,7 +237,8 @@ namespace Chess
 				case "b":
 					return PieceColor.Black;
 				default:
-					throw new Exception($"Unknown Color {color}");
+					//Draw?
+					return PieceColor.None;
 			}
 		}
 
