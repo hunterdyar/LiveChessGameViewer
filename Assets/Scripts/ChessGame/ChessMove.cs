@@ -37,6 +37,16 @@ namespace Chess
 		{
 			givenMove = move.LastMove;
 			var fen = move.FEN;
+			InitByFen(fen);
+		}
+
+		public ChessMove(string fen)
+		{
+			InitByFen(fen);
+		}
+
+		public void InitByFen(string fen)
+		{
 			//clear list.
 			string[] elements = fen.Split(' ');
 			if (elements.Length != 6)

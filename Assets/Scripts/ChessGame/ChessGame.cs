@@ -22,6 +22,12 @@ namespace Chess
 
 		//starting board state
 		//piece id to position dictionary
+		public static Action OnNewGameStart;
+		public static Action<PieceColor> OnWinner;
+
+		public PieceColor Winner => Winner;
+		private PieceColor _winner = PieceColor.None;//todo: track with gamestate not just if winner is set or not
+		
 		private Piece?[,] _boardState;
 		private int _boardStateMoveNumber;
 		private int _halfMoveCountWithThisMoveNumber;
@@ -216,6 +222,27 @@ namespace Chess
 			{
 				InitRealPieces(_boardState);
 			}
+		}
+
+		public static PieceColor StringToColor(string color)
+		{
+			switch (color.ToLower())
+			{
+				case "w":
+				case "white":
+					return PieceColor.White;
+				case "black":
+				case "b":
+					return PieceColor.Black;
+				default:
+					throw new Exception($"Unknown Color {color}");
+			}
+		}
+
+		public void SetWinner(PieceColor winner)
+		{
+			//set the state to over.
+			_winner = winner;
 		}
 	}
 }

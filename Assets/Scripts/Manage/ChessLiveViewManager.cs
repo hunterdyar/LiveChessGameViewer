@@ -172,6 +172,13 @@ public class ChessLiveViewManager : MonoBehaviour
             //this is the game start or the game finish.
             Info info = JsonUtility.FromJson<Info>(update);
             CurrentInfo = info;
+            if (!string.IsNullOrEmpty(info.winner))
+            {
+                var winner = ChessGame.StringToColor(info.winner);
+                var lastMove = MoveData.ConstructFromFen(info.fen);
+                _pendingMoves.Enqueue(lastMove);
+                _game.SetWinner(winner);
+            }
             newGame = true;
         }
         else

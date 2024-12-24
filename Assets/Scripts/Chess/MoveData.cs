@@ -14,6 +14,7 @@ namespace Chess
         public ChessPosition MoveNewPosition;
         
         private MovePacket _data;
+        private MoveData() { }
         public MoveData(string rawJSON)
         {
             //Move: {"fen":"r6r/1p3pkp/pQ3np1/3qNp2/3Pn3/7P/PP2NPP1/R2R2K1 b - - 0 20","lm":"e3d4","wc":126,"bc":127}
@@ -46,7 +47,22 @@ namespace Chess
             MoveOldPosition = new ChessPosition(lm[0], lm[1]);
             MoveNewPosition = new ChessPosition(lm[2], lm[3]);
         }
-        
+
+        /// <summary>
+        /// Hacky workaround to needing to create a move for the last move, which we don't get as a standalone json but with the whole game thing.
+        /// </summary>
+        public static MoveData ConstructFromFen(string infoFen)
+        {
+            MovePacket packet = new MovePacket()
+            {
+                fen = infoFen,
+            };
+            return new MoveData()
+            {
+                _data =  packet,
+            };
+
+        }
     }
 
     [System.Serializable]
