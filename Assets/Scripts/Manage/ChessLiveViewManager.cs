@@ -26,10 +26,20 @@ public class ChessLiveViewManager : MonoBehaviour
     public float GameOverTime = 2.5f;
 
     private float errorRetryCountdown = 3f;
+
+    private UnityWebRequest _request;
     //refactor
     private ChessGame _game;
+
+    public static ChessLiveViewManager Instance;
     private void Awake()
     {
+        if (Instance != null)
+        {
+            Debug.LogError("Instance already exists");
+        }
+        Instance = this;
+        
         _game = new ChessGame();
         gameOverTimer = GameOverTime;
         ChangeState(GameState.SearchingForLiveGame,true);
@@ -39,7 +49,7 @@ public class ChessLiveViewManager : MonoBehaviour
     {
         GameSetings.LoadSetings();
         SceneManager.LoadSceneAsync("Settings", LoadSceneMode.Additive);
-        FindNewGame();
+        _ = FindNewGame();
     }
 
     private void Update()
@@ -47,14 +57,7 @@ public class ChessLiveViewManager : MonoBehaviour
         if (errorRetryCountdown <= 0)
         {
             errorRetryCountdown = 3f;
-            OnShouldClose?.Invoke();
-            //unload all other scenes.
-            for (int i = 1; i < SceneManager.loadedSceneCount; i++)
-            {
-                var ulo = SceneManager.UnloadSceneAsync(SceneManager.GetSceneAt(i).name);
-            }
-            //unload scene 0 and reload it. that's this scene!
-            SceneManager.LoadScene(0);
+            ResetEverything();
         }
         if (_state == GameState.WatchingGame)
         {
@@ -78,7 +81,7 @@ public class ChessLiveViewManager : MonoBehaviour
             
         }else if (State == GameState.SearchingForLiveGame)
         {
-            FindNewGame();
+            _=FindNewGame();
         }else if (State == GameState.GameComplete)
         {
             if (!_game.DoneDisplaying())
@@ -97,7 +100,11 @@ public class ChessLiveViewManager : MonoBehaviour
         }
     }
 
-    async void FindNewGame()
+    public void AskForNewGame()
+    {
+        _ = FindNewGame();
+    }
+    async Task FindNewGame()
     {
         ChangeState(GameState.WatchingGame);
         await UpdateChannels();
@@ -127,17 +134,22 @@ public class ChessLiveViewManager : MonoBehaviour
     private async Task UpdateChannels()
     {
         //https://lichess.org/api/tv/channels
-        var request = UnityWebRequest.Get("https://lichess.org/api/tv/channels");
-        await request.SendWebRequest();
-        if (request.result == UnityWebRequest.Result.Success)
+        _request = UnityWebRequest.Get("https://lichess.org/api/tv/channels");
+        await _request.SendWebRequest();
+        if (_request.result == UnityWebRequest.Result.Success)
         {
-            var data = request.downloadHandler.text;
+            var data = _request.downloadHandler.text;
             _channelList = new ChannelList(data);
         }
     }
     
     void HookIntoGame(string gameID)
     {
+        if (_request != null)
+        {
+            //abort?
+            _request.Dispose();
+        }
         WebRequest request = WebRequest.Create($"https://lichess.org/api/stream/game/{gameID}");
         // request.Credentials = new NetworkCredential("username", "password");
         request.BeginGetResponse(ar => 
@@ -198,5 +210,18 @@ public class ChessLiveViewManager : MonoBehaviour
         }
 
         _game.RecreateRealPieces();
+    }
+
+    public static void ResetEverything()
+    {
+        OnShouldClose?.Invoke();
+        //unload all other scenes.
+        for (int i = 1; i < SceneManager.loadedSceneCount; i++)
+        {
+            var ulo = SceneManager.UnloadSceneAsync(SceneManager.GetSceneAt(i).name);
+        }
+
+        //unload scene 0 and reload it. that's this scene!
+        SceneManager.LoadScene(0);
     }
 }
